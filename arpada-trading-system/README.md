@@ -20,6 +20,21 @@ En la fase inicial, el sistema se diseñó como un prototipo funcional (MVP) baj
     * **Cuello de botella en concurrencia:** La contención de recursos impedía atender a múltiples usuarios simultáneamente; la navegación se volvía lenta o inaccesible mientras el servidor procesaba datos en segundo plano.
     * **Escalado ineficiente:** Para solucionar los picos de procesamiento era necesario escalar verticalmente toda la máquina, desperdiciando recursos en los periodos de baja actividad.
 
+```mermaid
+graph TD
+    subgraph "Single Droplet (v1.0)"
+        Web[Servidor Web / Django]
+        Scraper[Script Scraper & Normalizador]
+        DB[(Base de Datos Local)]
+        
+        Web -- "Llamada Síncrona (Bloqueante)" --> Scraper
+        Scraper -- "Escritura Directa" --> DB
+        Web -- "Lectura" --> DB
+    end
+    User((Usuario)) -- "HTTP Request" --> Web
+    style Scraper fill:#f96,stroke:#333,stroke-width:2px
+```
+
 ### v2.0: Desacoplamiento de Infraestructura y UI Responsiva
 **Objetivo:** Mejorar la estabilidad del servicio y la experiencia de usuario (UX) separando la capa de presentación de la persistencia de datos.
 
@@ -37,6 +52,25 @@ En esta etapa de transición, se abandonó el monolito único para dividir la ca
     * **Inestabilidad del Entorno (Dependency Hell):** Las actualizaciones de librerías y del SO en el servidor de datos generaban conflictos que rompían el entorno de ejecución del extractor local.
     * **Mantenimiento del Scraper:** La fragilidad del código propio frente a cambios en las fuentes externas motivaron la decisión de **delegar la extracción a un servicio SaaS externo** como intermediario fiable.
 
+```mermaid
+graph LR
+    subgraph "Droplet A: Presentación"
+        Web[Servidor Web]
+    end
+    
+    subgraph "Droplet B: Datos"
+        DB[(PostgreSQL)]
+        Scraper[Extractor Local]
+    end
+
+    User((Usuario)) --> Web
+    Web -- "Túnel SSH / VPN" --> DB
+    Scraper -- "Escritura Local" --> DB
+    SaaS[SaaS Scraper Externo] -.-> Scraper
+```
+
+---
+
 ### v3.0: Servicios Gestionados y Modularidad Transparente
 **Objetivo:** Eliminar la carga operativa de administración de servidores (DevOps) y aumentar la resiliencia mediante servicios gestionados.
 
@@ -50,6 +84,25 @@ Una vez validada la separación de responsabilidades en la v2.0, se migró la in
     * **Mejora Continua Invisible:** Gracias al desacoplamiento previo, las piezas de la infraestructura pudieron sustituirse (de Droplet a PaaS) de forma totalmente transparente para el usuario final, sin cortes de servicio.
     * **Reducción de "Ruido" Operativo:** El equipo de desarrollo dejó de preocuparse por parches de seguridad, actualizaciones de Linux o configuraciones de firewall en la web y la BBDD.
 * **Problema a resolver (Próximo paso):** El Extractor en el Droplet sigue siendo un "punto único de fallo" que requiere mantenimiento y está sobredimensionado para tareas que son esporádicas, lo que prepara el terreno para la **migración a Serverless**.
+
+```mermaid
+graph LR
+    User((Usuario)) --> App["DO App Platform (Web)"]
+    
+    subgraph "DigitalOcean Managed Services"
+        DB[("Managed Database")]
+    end
+    
+    subgraph "Legacy Infra"
+        Droplet["Droplet Extractor (Punto único de fallo)"]
+    end
+
+    App --> DB
+    Droplet --> DB
+    style Droplet fill:#ffcccc,stroke:#f00
+```
+
+---
 
 ### v4.0: Arquitectura Event-Driven (Serverless & Redis)
 **Objetivo:** Escalabilidad infinita, actualización de datos en tiempo real y observabilidad total mediante orquestación de estados de alta velocidad.
@@ -66,6 +119,29 @@ En la evolución final, se eliminó el último vestigio de infraestructura fija 
     * **Observabilidad Total:** El panel de administrador lee directamente de Redis, permitiendo visualizar en tiempo real qué está ocurriendo en el *backend*, detectar errores específicos y reintentar tareas fallidas.
     * **Eficiencia de Costes y Recursos:** Solo se consumen recursos de computación (Functions) cuando hay datos que procesar. Si nadie actualiza, el coste es cero.
     * **Rendimiento "Como un tiro":** Al descargar a la BBDD principal de la gestión de colas y usar la latencia de microsegundos de Redis, la sensación de fluidez del sistema es máxima.
+
+```mermaid
+graph TD
+    User((Usuario)) --> Web[App Platform]
+    Web -- "1. Petición Update" --> Redis{"Redis (Gestor de Colas)"}
+    
+    subgraph "Serverless Cloud"
+        Func1[Function: Scraper A]
+        Func2[Function: Scraper B]
+        Func3[Function: Normalizador]
+    end
+    
+    Redis -- "2. Trigger Event" --> Func1
+    Redis -- "2. Trigger Event" --> Func2
+    Func1 & Func2 --> Func3
+    
+    Func3 -- "3. Datos Limpios" --> DB[(Managed DB)]
+    Func3 -- "4. Actualizar Estado" --> Redis
+    
+    Admin[Panel Admin] -- "Observabilidad (Real-time)" --> Redis
+    
+    style Redis fill:#E22C3C,color:white,stroke:#333
+```
 
 ### v5.0: Inteligencia Artificial Nativa (GenAI Platform & Vector Search)
 **Objetivo:** Transformar datos cuantitativos en "narrativas" cualitativas utilizando servicios gestionados de IA para reducir la complejidad operativa y los costes de inferencia.
@@ -85,3 +161,26 @@ Se sustituye la gestión manual de modelos por la **DigitalOcean GenAI Platform*
     * **Simplificación Total:** Todo (Web, BBDD, Functions, Modelos de Texto y Embeddings) vive dentro del ecosistema de DigitalOcean.
     * **Escalado Económico:** Usar modelos pequeños para resumir y modelos de embeddings optimizados reduce costes frente a usar modelos gigantes para todo.
     * **Gobernanza del Dato:** Los datos sensibles nunca salen de la infraestructura privada virtual (VPC) de DigitalOcean.
+
+```mermaid
+sequenceDiagram
+    participant Source as Fuente Datos
+    participant Func as DO Function
+    participant SmallLLM as GenAI (Llama 8B)
+    participant Embed as GenAI (Embeddings)
+    participant DB as DB (pgvector)
+    participant Admin as Admin Blog
+
+    Note over Source, DB: Fase 1: Ingesta Cognitiva
+    Source->>Func: Datos Crudos
+    Func->>SmallLLM: Enviar Datos
+    SmallLLM->>Func: Retorna "Micro-Resumen"
+    Func->>Embed: Enviar Resumen
+    Embed->>Func: Retorna Vector [0.12, 0.98...]
+    Func->>DB: INSERT (Texto + Vector)
+
+    Note over DB, Admin: Fase 2: RAG (Blog Generation)
+    Admin->>DB: Consulta Semántica
+    DB->>Admin: Retorna Contexto Relevante
+    Admin->>Admin: Generación Post con IA + Contexto
+```
