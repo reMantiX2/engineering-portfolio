@@ -13,7 +13,7 @@ Una evolución arquitectónica completa de un sistema de ingesta de datos financ
 * **Diseño Orientado a Eventos:** Implementación de **Redis** como orquestador de estados de alta velocidad para cientos de funciones de *scraping* concurrentes.
 * **Integración GenAI:** Uso de **RAG (Generación Aumentada por Recuperación)** con Búsqueda Vectorial para transformar datos financieros crudos en narrativas estratégicas automatizadas.
 
-[**📄 Leer el Estudio de Arquitectura completo →**](./projects/arpada-trading-system.md)
+[**📄 Leer el Estudio de Arquitectura completo →**](./arpada-trading-system)
 
 ---
 
