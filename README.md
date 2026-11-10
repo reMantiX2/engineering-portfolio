@@ -1,5 +1,21 @@
 # Portafolio de Ingeniería
-> Selección de trabajos en ingeniería de software: Abstracciones arquitectónicas, soluciones Cloud-Native y demostraciones técnicas de proyectos.
+> Sistemas que he diseñado y dirigido de la arquitectura a producción. No programo: defino, decido y valido, y la implementación la ejecutan agentes de IA a partir de mis especificaciones y con revisión de cada entrega.
+
+## 🔭 Actualmente
+
+### D2M: Plataforma de Inteligencia Editorial y Datos
+**Rol:** Director técnico y de producto (arquitectura, dirección del desarrollo con asistentes de IA y operación en producción)
+**Stack:** Python, Django, PostgreSQL, Docker, DigitalOcean, modelos de lenguaje.
+
+Sistema que automatiza la cobertura diaria de una comunidad de videojuegos de habla hispana: un pipeline editorial con IA que propone y una persona que aprueba, un extractor que convierte cada nueva versión de los datos en información versionada y auditable, y un portal web multilingüe que se reconstruye sobre esa base.
+
+* **Editorial con supervisión humana:** en producción a diario desde abril de 2026, con módulos especializados por canal y un registro de cobertura que evita repetir contenido.
+* **Datos reproducibles:** el conjunto completo se regenera con 0 diferencias en 4.281 ficheros y 13 idiomas, y cada versión produce su changelog automático. En la primera actualización real detectó cambios que las notas oficiales no mencionaban.
+* **Migración con los datos como fuente de verdad:** el contraste con la web anterior sacó a la luz 331 errores heredados que no se migran.
+
+[**📄 Leer el Estudio de Arquitectura completo →**](./d2mantix-architecture)
+
+---
 
 ## 🚀 Proyectos Destacados
 
@@ -18,21 +34,7 @@ Plataforma web por suscripción que reúne cada día información dispersa sobre
 
 ---
 
-### 2. D2M: Plataforma de Inteligencia Editorial y Datos
-**Rol:** Director técnico y de producto (arquitectura, dirección del desarrollo con asistentes de IA y operación en producción)
-**Stack:** Python, Django, PostgreSQL, Docker, DigitalOcean, modelos de lenguaje.
-
-Sistema que automatiza la cobertura diaria de una comunidad de videojuegos de habla hispana: un pipeline editorial con IA que propone y una persona que aprueba, un extractor que convierte cada nueva versión de los datos en información versionada y auditable, y un portal web multilingüe que se reconstruye sobre esa base.
-
-* **Editorial con supervisión humana:** en producción a diario desde abril de 2026, con módulos especializados por canal y un registro de cobertura que evita repetir contenido.
-* **Datos reproducibles:** el conjunto completo se regenera con 0 diferencias en 4.281 ficheros y 13 idiomas, y cada versión produce su changelog automático. En la primera actualización real detectó cambios que las notas oficiales no mencionaban.
-* **Migración con los datos como fuente de verdad:** el contraste con la web anterior sacó a la luz 331 errores heredados que no se migran.
-
-[**📄 Leer el Estudio de Arquitectura completo →**](./d2mantix-architecture)
-
----
-
-### 3. Motor de Ejecución Automatizada de Órdenes
+### 2. Motor de Ejecución Automatizada de Órdenes
 **Rol:** Director del proyecto de punta a punta (arquitectura, dirección del desarrollo con asistentes de IA y operación en producción)
 **Stack:** Python, FastAPI, Django, PostgreSQL, Redis, Docker Compose, Caddy, Cloudflare, DigitalOcean.
 
@@ -46,7 +48,7 @@ Plataforma que convierte señales de trading externas en órdenes en un broker, 
 
 ---
 
-### 4. Hub de Datos Financieros Normalizados
+### 3. Hub de Datos Financieros Normalizados
 **Rol:** Director del desarrollo de principio a fin (arquitectura, calidad de datos y dirección con asistentes de IA)
 **Stack:** Python, Django, PostgreSQL, Docker, HTMX, DigitalOcean.
 
@@ -60,78 +62,33 @@ Plataforma que recoge información financiera pública de empresas cotizadas, la
 
 ---
 
-### 5. Plataforma de Agregación de Datos Estadísticos
-**Rol:** Dirección técnica y de producto (arquitectura, especificaciones y dirección con asistentes de IA)
-**Stack:** Python, FastAPI, PostgreSQL, Docker Compose, almacenamiento de objetos.
+## 🗂 Otros Proyectos
 
-Plataforma que recoge datos estadísticos públicos de varios organismos, cada uno con sus propios formatos, códigos y calendarios, y los sirve mediante una API única y estable. Prototipo operativo en entorno local.
-
-* **Ingesta y servicio desacoplados:** la API solo consulta la base propia, así que una fuente caída o cambiada nunca rompe el servicio.
-* **Reprocesable y trazable:** copia original inmutable, etapas que guardan su resultado y detección de cambios en cada nueva publicación de la fuente.
-* **Respaldo probado de verdad:** restauración completa verificada sobre unos 9 millones de observaciones.
-
-[**📄 Leer el Estudio de Arquitectura completo →**](./statistical-data-platform)
+* **[Motor editorial automatizado](./editorial-automation-engine):** pipeline diario que convierte datos financieros estructurados en contenido listo para publicar, con reglas deterministas que eligen, IA que solo redacta y un editor que aprueba. Node.js, jobs efímeros en PaaS y SSO corporativo. En producción desde agosto de 2026.
+* **[Plataforma de agregación de datos estadísticos](./statistical-data-platform):** ingesta por etapas desde varios organismos públicos y una API única y estable, con ingesta y servicio desacoplados y respaldo con restauración probada. FastAPI y PostgreSQL. Prototipo operativo.
 
 ---
 
-### 6. Motor Editorial Automatizado
-**Rol:** Dirección de producto y técnica de punta a punta (arquitectura, costes, dirección con agentes de IA y operación)
-**Stack:** Node.js, Express, PostgreSQL, DigitalOcean (PaaS con jobs programados), SSO corporativo, modelos de lenguaje.
+## 🌐 Webs Estáticas y Distribución por CDN
 
-Pipeline que convierte cada día datos financieros estructurados en contenido listo para publicar (posts, piezas visuales, avisos y newsletter semanal), con un editor humano que decide qué sale. En producción y en uso diario desde agosto de 2026.
+Sitios sin servidor ni base de datos para personas que no editan código: alojamiento casi gratuito, superficie de ataque mínima, carga rápida y publicación desde el repositorio.
 
-* **La IA solo redacta:** una capa de reglas deterministas, configurable desde el panel, decide qué merece contenido. Coste acotado, resultados auditables y menos alucinaciones.
-* **Infraestructura ligera:** jobs efímeros que solo cuestan mientras se ejecutan, y piezas visuales generadas en el navegador del editor en lugar de en el servidor.
-* **Evolución pragmática:** de un prompt usado a mano en un chat a un panel instalable con SSO, con más de 150 ejecuciones del job diario en producción.
+* **[Web corporativa bilingüe para un estudio de arquitectura](./architecture-studio-website):** bilingüe nativa, modelo de contenido mínimo y factual, movimiento con mejora progresiva y una capa de descubrimiento generada en cada build (datos estructurados, sitemap y archivo legible por modelos de lenguaje) para posicionar en buscadores tradicionales y generativos.
+* **[Portal editorial para una comunidad de esports](./esports-community-portal):** migración de una aplicación con servidor a un sitio estático en CDN con despliegue automático, eliminando el coste fijo del servidor, y un modelo de contenido diseñado para que la portada nunca quede vacía.
 
-[**📄 Leer el Estudio de Arquitectura completo →**](./editorial-automation-engine)
+**Stack común:** Hugo, Markdown con metadatos, HTML/CSS/JS sin frameworks, GitHub, hosting estático con CDN, DNS y certificados gestionados.
 
 ---
-
-### 7. Web Corporativa Bilingüe para un Estudio de Arquitectura
-**Rol:** Dirección técnica y de producto de principio a fin (colaboración con un estudio)
-**Stack:** Hugo, HTML/CSS/JS sin frameworks, Markdown, GitHub, hosting estático.
-
-Sitio estático y bilingüe para un estudio de arquitectura y reformas: una marca premium que debía encontrarse en búsquedas locales y en asistentes de IA, con coste y mantenimiento mínimos para un equipo que no edita código. En producción.
-
-* **Sin servidor ni base de datos:** alojamiento casi gratuito, superficie de ataque mínima y carga rápida.
-* **Diseñada para ser citada:** cada build genera datos estructurados, sitemap, un archivo legible por modelos de lenguaje e imagen social por proyecto.
-* **Contenido verificable:** modelo de datos mínimo y factual, taxonomía cerrada y normas editoriales que prohíben inventar datos o simular obra con imágenes generadas.
-
-[**📄 Leer el Estudio de Arquitectura completo →**](./architecture-studio-website)
-
----
-
-### 8. Portal Editorial para una Comunidad de Esports
-**Rol:** Dirección técnica completa, de los requisitos a producción
-**Stack:** Hugo, Markdown, HTML/CSS/JS sin frameworks, GitHub, hosting estático con CDN.
-
-Migración de un portal de contenidos sobre un videojuego de nicho desde una aplicación con servidor a un sitio estático servido por CDN, pensado para que una persona sin perfil técnico lo mantenga sola. En producción.
-
-* **Fuera el servidor:** sin coste fijo mensual, con mantenimiento y superficie de ataque mínimos.
-* **Publicar es escribir y subir:** despliegue automático desde el repositorio, con historial y vuelta atrás.
-* **Modelo de contenido pensado para el volumen real:** un único tipo de artículo con categorías cerradas y etiquetas libres, para que la portada nunca quede vacía.
-
-[**📄 Leer el Estudio de Arquitectura completo →**](./esports-community-portal)
-
----
-
-### 9. AI Content Engine: ETL de Alta Eficiencia e Inferencia
-**Rol:** Ingeniero Backend
-**Stack:** Python, Inferencia Serverless (Llama 3 / Mistral), Pinecone, Docker.
-
-Un pipeline automatizado diseñado para normalizar estructuras de datos complejas (JSON) y generar contenido semántico a escala.
-
-* **Inferencia Serverless:** Transición desde modelos locales con recursos restringidos (límites de 1GB RAM) hacia APIs de Inferencia en la Nube escalables, permitiendo el uso de LLMs potentes sin sobrecarga de hardware.
-* **ETL Cognitivo:** Limpieza y vectorización automatizada de fuentes de datos no estructuradas para aplicaciones RAG posteriores.
 
 ## 🛠 Habilidades Técnicas
 
-| Dominio | Tecnologías |
+| Dominio | Tecnologías y prácticas |
 | :--- | :--- |
-| **Cloud & DevOps** | DigitalOcean (Functions, App Platform), AWS (S3, CloudFront), Docker, CI/CD |
-| **Backend & Data** | Python, Django, Redis, PostgreSQL, Bases de Datos Vectoriales (pgvector, Pinecone) |
-| **IA & ML** | Arquitecturas RAG, Integración de LLMs (Llama 3, Mistral), Embeddings, Prompt Engineering |
+| **Dirección técnica** | Arquitectura por fases con criterios de cierre, registro de decisiones con contrapartidas, estrategia de pruebas, observabilidad, RGPD, dirección del desarrollo con agentes de IA |
+| **Backend y datos** | Python, Django, FastAPI, Celery, Node.js/Express, PostgreSQL, Redis/Valkey, almacenamiento de objetos compatible con S3 |
+| **Cloud y operación** | DigitalOcean (App Platform, servidores virtuales, bases de datos gestionadas), Docker y Docker Compose, Caddy, Cloudflare, systemd, despliegue continuo desde GitHub |
+| **IA** | Modelos de lenguaje en pipelines con supervisión humana, IA como redactora y nunca como fuente de cifras, búsqueda vectorial (prototipo) |
+| **Web** | Hugo, HTML/CSS/JS sin frameworks, HTMX, PWA, sistemas de diseño propios, SEO técnico y para buscadores generativos, pagos con Stripe |
 
 ---
-*© 2025 - Portafolio de Ingeniería. Todas las arquitecturas aquí documentadas están basadas en despliegues reales en producción.*
+*© 2026 · Portafolio de Ingeniería. Todos los proyectos son sistemas reales; el estado de cada uno (producción, beta, desarrollo o prototipo) se indica en su ficha. Nombres comerciales, fuentes de datos y detalles de negocio se omiten deliberadamente.*
