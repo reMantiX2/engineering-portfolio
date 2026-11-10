@@ -1,109 +1,111 @@
-# Web corporativa bilingüe para un estudio de arquitectura
+# Bilingual Corporate Website for an Architecture Studio
 
-> **Estado:** en producción en el dominio propio del estudio.
-> **Rol:** dirección técnica y de producto de principio a fin.
+🇪🇸 [Versión en español](README.es.md)
 
-Sitio web estático y bilingüe para un estudio de arquitectura y reformas, con catálogo de proyectos, formulario de contacto y optimización para buscadores tradicionales y generativos.
+> **Status:** in production on the studio's own domain.
+> **Role:** end-to-end technical and product lead.
 
----
-
-## 🎯 El problema
-
-El estudio necesitaba una presencia digital propia que:
-
-- estuviera a la altura de una marca premium;
-- se encontrara en búsquedas locales y en asistentes de IA;
-- tuviera un coste y un mantenimiento técnico mínimos.
-
-Además, el equipo del estudio no edita código.
+A static, bilingual website for an architecture and renovation studio, with a project catalogue, a contact form, and optimisation for both traditional and generative search engines.
 
 ---
 
-## 🧭 Mi rol y método
+## 🎯 The problem
 
-La implementación se hizo con asistencia de IA bajo mi dirección y revisión.
+The studio needed its own digital presence that would:
 
-- **Arquitectura y stack:** elegí un generador estático y descarté un CMS dinámico.
-- **Idiomas y URLs:** definí la estrategia de ambos.
-- **Modelo de contenido:** qué datos tiene un proyecto y qué no se publica nunca.
-- **Movimiento y accesibilidad:** fijé los principios a partir del manual de marca.
-- **Normas editoriales:** dirigí la curación fotográfica, con dos reglas: no usar imágenes generadas que simulen obra y no inventar datos de proyecto.
-- **Posicionamiento:** estrategia orgánica, local y en buscadores generativos.
-- **Producción:** llevé el sitio a producción y lo mantengo.
-- **Comunicación con el estudio:** traduje las decisiones técnicas a informes y presentaciones para un equipo no técnico.
+- live up to a premium brand;
+- be found in local searches and by AI assistants;
+- have minimal cost and technical maintenance.
+
+On top of that, the studio's team doesn't edit code.
 
 ---
 
-## ⚙️ Arquitectura
+## 🧭 My role and approach
+
+The implementation was done with AI assistance under my direction and review.
+
+- **Architecture and stack:** I chose a static site generator and ruled out a dynamic CMS.
+- **Languages and URLs:** I defined the strategy for both.
+- **Content model:** what data a project has and what is never published.
+- **Motion and accessibility:** I set the principles based on the brand guidelines.
+- **Editorial rules:** I led the photo curation, with two rules: no generated images that pass for real work, and no invented project data.
+- **Search positioning:** organic, local and generative search strategy.
+- **Production:** I took the site to production and maintain it.
+- **Communication with the studio:** I translated technical decisions into reports and presentations for a non-technical team.
+
+---
+
+## ⚙️ Architecture
 
 ```mermaid
 graph LR
-    subgraph REPO["Repositorio privado (fuente única)"]
-        CONT[Contenido por idioma]
-        TPL[Plantillas y tokens de marca]
-        TXT[Textos de interfaz]
+    subgraph REPO["Private repository (single source)"]
+        CONT[Content per language]
+        TPL[Templates and brand tokens]
+        TXT[Interface strings]
     end
 
-    CONT --> GEN[Generador estático]
+    CONT --> GEN[Static generator]
     TPL --> GEN
     TXT --> GEN
-    GEN --> HTML[HTML estático]
-    GEN --> DISC[Capa de descubrimiento]
-    HTML --> HOST[Hosting estático]
+    GEN --> HTML[Static HTML]
+    GEN --> DISC[Discovery layer]
+    HTML --> HOST[Static hosting]
     DISC --> HOST
-    HOST --> USR((Visitantes))
-    HOST --> BOTS((Buscadores y asistentes de IA))
-    USR -->|formulario| FORM[Servicio externo<br/>con anti-spam]
+    HOST --> USR((Visitors))
+    HOST --> BOTS((Search engines and AI assistants))
+    USR -->|form| FORM[External service<br/>with anti-spam]
 ```
 
-- **Generador de sitio estático:** convierte plantillas y archivos de contenido versionados en HTML. No hay base de datos ni servidor de aplicación.
-- **Capa de contenido:** cada proyecto es un archivo por idioma, con fotos y unos pocos campos factuales. Los textos de interfaz están centralizados por idioma.
-- **Capa de presentación:** plantillas reutilizables (inicio, listado con filtro, ficha de proyecto, estudio, servicios, equipo y contacto) y una hoja de estilos con tokens de marca. El JavaScript es ligero y solo mejora la experiencia: navegación móvil, animaciones de entrada, filtro y envío del formulario.
-- **Servicios externos mínimos:** el formulario envía a un servicio de terceros, con confirmación dentro de la página y protección anti-spam.
-- **Capa de descubrimiento,** generada en cada build: metadatos, datos estructurados, sitemap, robots, un archivo legible por modelos de lenguaje e imagen para redes recortada automáticamente de la foto de cada proyecto.
+- **Static site generator:** turns templates and versioned content files into HTML. No database and no application server.
+- **Content layer:** each project is one file per language, with photos and a few factual fields. Interface strings are centralised per language.
+- **Presentation layer:** reusable templates (home, filterable listing, project page, studio, services, team and contact) and a stylesheet with brand tokens. JavaScript is light and only enhances the experience: mobile navigation, entrance animations, filtering and form submission.
+- **Minimal external services:** the form posts to a third-party service, with in-page confirmation and spam protection.
+- **Discovery layer,** generated on every build: metadata, structured data, sitemap, robots, an LLM-readable file, and a social image automatically cropped from each project's photo.
 
 ---
 
-## 🧩 Decisiones clave
+## 🧩 Key decisions
 
-### 1. Estático en lugar de un CMS tradicional
-- **Por qué:** alojamiento casi gratuito, superficie de ataque mínima, carga rápida y prácticamente ningún mantenimiento.
-- **Contrapartida:** no hay panel de edición nativo y cada cambio exige un build.
+### 1. Static instead of a traditional CMS
+- **Why:** near-free hosting, minimal attack surface, fast loading and practically no maintenance.
+- **Trade-off:** no native editing panel, and every change requires a build.
 
-### 2. Bilingüe nativo: idioma principal en la raíz y secundario en un subdirectorio
-- **Por qué:** URLs limpias para el mercado principal, sin redirección inicial, y mejor SEO local.
-- **Contrapartida:** el contenido se duplica por idioma, y si falta una traducción esa URL da error.
+### 2. Natively bilingual: primary language at the root and the second in a subdirectory
+- **Why:** clean URLs for the main market, no initial redirect, and better local SEO.
+- **Trade-off:** content is duplicated per language, and if a translation is missing that URL returns an error.
 
-### 3. Modelo de contenido mínimo y factual, con taxonomía cerrada
-- **Por qué:** no se publica nada que no se pueda verificar. El tipo de proyecto es un valor fijo, así que el filtro es fiable, y solo aparece cuando hay variedad real.
-- **Contrapartida:** fichas austeras, cuya calidad depende mucho de la fotografía.
+### 3. A minimal, factual content model with a closed taxonomy
+- **Why:** nothing that can't be verified gets published. Project type is a fixed value, so the filter is reliable, and it only appears when there is real variety.
+- **Trade-off:** sparse project pages whose quality depends heavily on photography.
 
-### 4. Movimiento con mejora progresiva
-- **Por qué:** la web debe sentirse viva sin competir con la foto. El contenido se ve aunque el JavaScript falle o no cargue, y se respeta la preferencia de movimiento reducido.
-- **Contrapartida:** efectos más contenidos y más pruebas en distintos dispositivos.
+### 4. Motion with progressive enhancement
+- **Why:** the site should feel alive without competing with the photos. Content is visible even if JavaScript fails or doesn't load, and the reduced-motion preference is respected.
+- **Trade-off:** more restrained effects and more testing across devices.
 
-### 5. Diseñada para ser citada, no solo indexada
-- **Por qué:** el sitio describe en prosa clara quién es el estudio, qué hace y dónde, y genera automáticamente la capa para buscadores y asistentes de IA.
-- **Contrapartida:** los campos vacíos se notan en esa capa, y el texto alternativo de las fotos se sigue escribiendo a mano.
-
----
-
-## ⏳ Evolución
-
-1. Maqueta de diseño para fijar la dirección visual y el movimiento.
-2. Implementación con despliegue continuo desde el repositorio.
-3. Diseño responsive con menú móvil a pantalla completa.
-4. Secciones nuevas: proyectos con filtro, contacto con envío sin recarga y servicios. La sección de proceso se sustituyó por la de equipo a petición del estudio.
-5. Capa de SEO, SEO local y buscadores generativos, con imagen social automática por proyecto.
+### 5. Designed to be cited, not just indexed
+- **Why:** the site describes in plain prose who the studio is, what it does and where, and automatically generates the layer for search engines and AI assistants.
+- **Trade-off:** empty fields show up in that layer, and photo alt text is still written by hand.
 
 ---
 
-## 📊 Resultados
+## ⏳ Evolution
 
-Sitio bilingüe completo en producción, con un catálogo de proyectos reales publicado en los dos idiomas. No se han medido tráfico, conversiones ni rendimiento.
+1. Design mock-up to set the visual direction and motion.
+2. Implementation with continuous deployment from the repository.
+3. Responsive design with a full-screen mobile menu.
+4. New sections: filterable projects, contact with no-reload submission, and services. The process section was replaced by a team section at the studio's request.
+5. SEO, local SEO and generative search layer, with an automatic social image per project.
+
+---
+
+## 📊 Results
+
+A complete bilingual site in production, with a catalogue of real projects published in both languages. Traffic, conversions and performance have not been measured.
 
 ---
 
 ## 🛠 Stack
 
-Hugo · HTML, CSS y JavaScript sin frameworks de cliente · contenido en Markdown con metadatos estructurados · GitHub (repositorio privado) · hosting estático · sin base de datos.
+Hugo · HTML, CSS and JavaScript without client-side frameworks · Markdown content with structured metadata · GitHub (private repository) · static hosting · no database.

@@ -1,108 +1,110 @@
-# Motor de ejecución automatizada de órdenes
+# Automated Order Execution Engine
 
-> **Estado:** en producción en modo simulado (paper trading) y en uso diario desde octubre de 2026. El paso a operativa real está pendiente de ajustes de autenticación y supervisión.
-> **Rol:** director del proyecto, de punta a punta.
+🇪🇸 [Versión en español](README.es.md)
 
-Plataforma que recibe señales de trading generadas en una herramienta externa y las convierte en órdenes en un broker, sin intervención manual y las 24 horas. Cada operación queda registrada de principio a fin, y los resultados se consultan por día, semana y mes en un panel de control.
+> **Status:** in production in paper-trading mode and in daily use since October 2026. Moving to live trading is pending authentication and monitoring adjustments.
+> **Role:** end-to-end project lead.
 
-Antes, la ejecución dependía de procesos frágiles y no había una forma fiable de conocer el resultado real.
+A platform that receives trading signals generated in an external tool and turns them into broker orders, with no manual intervention and around the clock. Every trade is recorded from start to finish, and results can be reviewed by day, week and month in a control dashboard.
 
----
-
-## 🧭 Mi rol y método
-
-No escribo el código: el código lo producen asistentes de IA bajo mi dirección y revisión.
-
-- **Objetivos y fases:** primero un flujo mínimo que funcione, después robustez y, por último, que se pueda replicar.
-- **Arquitectura y stack:** tomé las decisiones técnicas, incluida la de rechazar una propuesta más simple que no aguantaba el uso en producción.
-- **Prioridades técnicas:** seguridad frente a órdenes duplicadas, recuperación automática y trazabilidad completa.
-- **Criterios de aceptación:** por ejemplo, pruebas de concurrencia antes de confiar en el sistema.
-- **Operación:** despliegue, servidor e incidentes en producción.
-- **Producto e interfaz:** rediseño del panel con un sistema de diseño propio.
-- **Documentación:** encargué y validé un manual de usuario y una guía técnica.
+Previously, execution relied on fragile processes and there was no reliable way to know the real outcome.
 
 ---
 
-## ⚙️ Arquitectura
+## 🧭 My role and approach
+
+I don't write the code: it is produced by AI assistants under my direction and review.
+
+- **Goals and phases:** first a minimal working flow, then robustness, and finally replicability.
+- **Architecture and stack:** I made the technical decisions, including rejecting a simpler proposal that would not hold up in production.
+- **Technical priorities:** protection against duplicate orders, automatic recovery and full traceability.
+- **Acceptance criteria:** for example, concurrency tests before trusting the system.
+- **Operations:** deployment, server management and production incidents.
+- **Product and interface:** dashboard redesign with an in-house design system.
+- **Documentation:** I commissioned and validated a user manual and a technical guide.
+
+---
+
+## ⚙️ Architecture
 
 ```mermaid
 graph LR
-    SIG[Emisor de señales] --> WAF[CDN / WAF<br/>filtro por origen]
-    WAF --> PRX[Proxy inverso con TLS]
+    SIG[Signal source] --> WAF[CDN / WAF<br/>origin filter]
+    WAF --> PRX[Reverse proxy with TLS]
 
-    subgraph SRV["Servidor cloud (contenedores)"]
-        PRX --> ENG[Motor de ejecución]
-        PRX --> PAN[Panel web]
-        ENG --> DB[(Base de datos relacional)]
+    subgraph SRV["Cloud server (containers)"]
+        PRX --> ENG[Execution engine]
+        PRX --> PAN[Web dashboard]
+        ENG --> DB[(Relational database)]
         PAN --> DB
-        ENG --> CACHE[(Caché en memoria)]
-        ENG -->|conexión persistente| GW[Pasarela del broker]
-        VIG[Vigilante] -.->|recrea la conexión| GW
+        ENG --> CACHE[(In-memory cache)]
+        ENG -->|persistent connection| GW[Broker gateway]
+        VIG[Watchdog] -.->|recreates the connection| GW
     end
 
     GW --> BRK[Broker]
-    ENG -.-> AV[Avisos al móvil]
-    MON[Monitorización externa] -.->|salud| PRX
+    ENG -.-> AV[Mobile alerts]
+    MON[External monitoring] -.->|health| PRX
 ```
 
-- **Perímetro:** una CDN con WAF solo deja pasar el tráfico del emisor de señales. Detrás, un proxy inverso con TLS es el único componente expuesto a internet.
-- **Motor de ejecución:** servicio asíncrono que valida cada señal, la autentica con un token por bot y la procesa con exclusión mutua y control del estado de la posición. Habla con el broker por una única conexión persistente y ejecuta también tareas programadas, como los cierres de fin de sesión y los resúmenes.
-- **Pasarela del broker:** aislada en su propio contenedor.
-- **Panel web:** gestión de bots y webhooks, historial de operaciones, resúmenes de resultados y gestión de cuenta con credenciales cifradas. Acceso restringido y sin indexación.
-- **Datos:** una base de datos relacional compartida por el motor y el panel, más una caché en memoria para las validaciones frecuentes.
-- **Supervisión:** un vigilante recrea la conexión con el broker si cae; un endpoint de salud con monitorización externa, y avisos al móvil con el resumen diario y las desconexiones.
+- **Perimeter:** a CDN with a WAF only lets traffic from the signal source through. Behind it, a reverse proxy with TLS is the only component exposed to the internet.
+- **Execution engine:** an asynchronous service that validates every signal, authenticates it with a per-bot token, and processes it with mutual exclusion and position-state control. It talks to the broker over a single persistent connection and also runs scheduled tasks, such as end-of-session closes and summaries.
+- **Broker gateway:** isolated in its own container.
+- **Web dashboard:** bot and webhook management, trade history, results summaries and account management with encrypted credentials. Restricted access, not indexed.
+- **Data:** a relational database shared by the engine and the dashboard, plus an in-memory cache for frequent validations.
+- **Monitoring:** a watchdog recreates the broker connection if it drops; a health endpoint with external monitoring; and mobile alerts with the daily summary and disconnections.
 
 ---
 
-## 🧩 Decisiones clave
+## 🧩 Key decisions
 
-### 1. Separar el motor de ejecución del panel web
-- **Por qué:** latencia baja en la ruta crítica, y un fallo o un despliegue del panel nunca bloquea una orden.
-- **Contrapartida:** dos aplicaciones que mantener sobre una base de datos compartida, con cambios de esquema coordinados.
+### 1. Separate the execution engine from the web dashboard
+- **Why:** low latency on the critical path, and a dashboard failure or deployment never blocks an order.
+- **Trade-off:** two applications to maintain on a shared database, with coordinated schema changes.
 
-### 2. Quitar la cola de tareas y dejar la caché solo como caché
-- **Por qué:** menos piezas móviles, menos latencia y menos puntos de fallo para un volumen de señales moderado.
-- **Contrapartida:** se renuncia al escalado horizontal del procesamiento. Si el volumen crece mucho, habrá que reintroducirla.
+### 2. Remove the task queue and keep the cache as just a cache
+- **Why:** fewer moving parts, lower latency and fewer points of failure for a moderate signal volume.
+- **Trade-off:** horizontal scaling of processing is given up. If volume grows significantly, the queue will have to come back.
 
-### 3. Ante la duda, pausar en lugar de reintentar
-Un candado por bot y una máquina de estados de la posición garantizan que una orden nunca se duplica. Si el broker no confirma, el bot se detiene.
-- **Por qué:** cuando hay dinero en juego, una posición duplicada es peor que una oportunidad perdida.
-- **Contrapartida:** algunas pausas exigen revisión manual, y hubo que afinar la lógica de confirmación para evitar falsas alarmas.
+### 3. When in doubt, pause instead of retrying
+A per-bot lock and a position state machine guarantee an order is never duplicated. If the broker doesn't confirm, the bot stops.
+- **Why:** when money is at stake, a duplicated position is worse than a missed opportunity.
+- **Trade-off:** some pauses require manual review, and the confirmation logic had to be tuned to avoid false alarms.
 
-### 4. Una instancia aislada por cuenta, en lugar de un sistema compartido
-- **Por qué:** aislamiento total de credenciales y de riesgo entre cuentas, y un código más simple.
-- **Contrapartida:** más coste de infraestructura y despliegues repetidos. Por eso el sistema se configura entero por entorno y está documentado para replicarlo.
+### 4. One isolated instance per account instead of a shared system
+- **Why:** full isolation of credentials and risk between accounts, and simpler code.
+- **Trade-off:** higher infrastructure cost and repeated deployments. That's why the system is configured entirely by environment and documented for replication.
 
-### 5. Recuperación automática en lugar de intervención humana
-El vigilante reconstruye la conexión con el broker tras su reinicio diario y después cuadra el estado del sistema con el del broker.
-- **Por qué:** el sistema tiene que seguir funcionando sin depender de que alguien esté mirando.
-- **Contrapartida:** queda una ventana diaria sin servicio de madrugada, impuesta por el broker, y la escalada ante fallos repetidos aún debe mejorar.
+### 5. Automatic recovery instead of human intervention
+The watchdog rebuilds the broker connection after its daily restart and then reconciles the system's state with the broker's.
+- **Why:** the system has to keep running without depending on someone watching.
+- **Trade-off:** a daily overnight window without service remains, imposed by the broker, and escalation on repeated failures still needs improvement.
 
 ---
 
-## ⏳ Evolución
+## ⏳ Evolution
 
-| Fecha (2026) | Hito |
+| Date (2026) | Milestone |
 | :--- | :--- |
-| Agosto | Primer planteamiento como monolito con cola de tareas en un servidor virtual. Se evaluó calcular las señales dentro del sistema y se descartó a favor de recibirlas de fuera. |
-| Septiembre – octubre | Rediseño a la versión 2.0: motor y panel como servicios separados, sin cola de tareas, en contenedores independientes. Una auditoría del prototipo detectó carencias (sin control de concurrencia ni de estado, valores fijos en el código) que se corrigieron antes de producción. |
-| Octubre | Endurecimiento: exclusión mutua, kill switch automático y manual, cierres de fin de sesión, validación de símbolos, perímetro restringido por origen, vigilante con recuperación automática y avisos. Se cerraron diez huecos de trazabilidad detectados en producción. |
-| Noviembre | Panel rehecho con un sistema de diseño propio, gestión de cuenta con credenciales cifradas, aplicación privada sin indexación, y manual de usuario y guía técnica. |
+| August | First approach as a monolith with a task queue on a virtual server. Computing signals inside the system was evaluated and rejected in favour of receiving them from outside. |
+| September – October | Redesign to version 2.0: engine and dashboard as separate services, no task queue, in independent containers. An audit of the prototype found gaps (no concurrency or state control, hard-coded values) that were fixed before production. |
+| October | Hardening: mutual exclusion, automatic and manual kill switch, end-of-session closes, symbol validation, origin-restricted perimeter, watchdog with automatic recovery, and alerts. Ten traceability gaps found in production were closed. |
+| November | Dashboard rebuilt with an in-house design system, account management with encrypted credentials, private non-indexed application, and a user manual and technical guide. |
 
 ---
 
-## 📊 Resultados
+## 📊 Results
 
-- En funcionamiento continuo desde principios de octubre de 2026, en modo simulado.
-- Primer ciclo completo validado: el resultado económico cuadra al céntimo con el del broker.
-- Los cortes por desconexión del broker bajaron de hasta 16 horas, o incluso días, a la ventana de unos 90 minutos de madrugada en que se reinicia el propio broker.
-- 151 tests automatizados, incluidas pruebas de concurrencia.
-- Documentación: manual de usuario de 35 páginas y guía técnica de 18.
+- Running continuously since early October 2026, in paper-trading mode.
+- First complete cycle validated: the financial result matches the broker's to the cent.
+- Outages caused by broker disconnections dropped from up to 16 hours, or even days, to the roughly 90-minute overnight window when the broker itself restarts.
+- 151 automated tests, including concurrency tests.
+- Documentation: a 35-page user manual and an 18-page technical guide.
 
-Todavía no hay resultados con dinero real ni métricas de volumen o latencia.
+There are no live-trading results yet, nor volume or latency metrics.
 
 ---
 
 ## 🛠 Stack
 
-Python · FastAPI (motor) · Django (panel) · PostgreSQL · Redis · Docker Compose · Caddy · Cloudflare · DigitalOcean · HTML/CSS/JS sin frameworks · pytest.
+Python · FastAPI (engine) · Django (dashboard) · PostgreSQL · Redis · Docker Compose · Caddy · Cloudflare · DigitalOcean · HTML/CSS/JS without frameworks · pytest.

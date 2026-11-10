@@ -1,95 +1,98 @@
-# Portafolio de Ingeniería
-> Sistemas que he diseñado y dirigido de la arquitectura a producción. No programo: defino, decido y valido, y la implementación la ejecutan agentes de IA a partir de mis especificaciones y con revisión de cada entrega.
+# Engineering Portfolio
 
-## 🔭 Actualmente
+🇪🇸 [Versión en español](README.es.md)
 
-### D2M: Plataforma de Inteligencia Editorial y Datos
-**Rol:** Director técnico y de producto (arquitectura, dirección del desarrollo con asistentes de IA y operación en producción)
-**Stack:** Python, Django, PostgreSQL, Docker, DigitalOcean, modelos de lenguaje.
+> Systems I have designed and led from architecture to production. I don't write the code myself: I define, decide and validate, and the implementation is carried out by AI coding agents working from my specifications, with every delivery reviewed.
 
-Sistema que automatiza la cobertura diaria de una comunidad de videojuegos de habla hispana: un pipeline editorial con IA que propone y una persona que aprueba, un extractor que convierte cada nueva versión de los datos en información versionada y auditable, y un portal web multilingüe que se reconstruye sobre esa base.
+## 🔭 Currently
 
-* **Editorial con supervisión humana:** en producción a diario desde abril de 2026, con módulos especializados por canal y un registro de cobertura que evita repetir contenido.
-* **Datos reproducibles:** el conjunto completo se regenera con 0 diferencias en 4.281 ficheros y 13 idiomas, y cada versión produce su changelog automático. En la primera actualización real detectó cambios que las notas oficiales no mencionaban.
-* **Migración con los datos como fuente de verdad:** el contraste con la web anterior sacó a la luz 331 errores heredados que no se migran.
+### D2M: Editorial Intelligence and Data Platform
+**Role:** Technical and product lead (architecture, leading development with AI assistants, production operations)
+**Stack:** Python, Django, PostgreSQL, Docker, DigitalOcean, language models.
 
-[**📄 Leer el Estudio de Arquitectura completo →**](./d2mantix-architecture)
+A system that automates daily coverage for a Spanish-speaking gaming community: an AI editorial pipeline that proposes and a human who approves, an extractor that turns every new version of the data into versioned, auditable information, and a multilingual web portal being rebuilt on top of that foundation.
 
----
+* **Human-supervised editorial pipeline:** running daily in production since April 2026, with modules specialised by channel and a coverage log that prevents repeating content.
+* **Reproducible data:** the full dataset regenerates with 0 differences across 4,281 files and 13 languages, and every version produces its own automatic changelog. On its first real update it caught changes the official release notes did not mention.
+* **Migration with data as the source of truth:** comparing against the previous site surfaced 331 inherited errors that are not being carried over.
 
-## 🚀 Proyectos Destacados
-
-### 1. Arpada Trading: Plataforma SaaS de Inteligencia de Mercados
-**Rol:** Director técnico y de producto (arquitectura, dirección del desarrollo con agentes de IA y operación en producción)
-**Stack:** Python, Django, Celery, Redis/Valkey, PostgreSQL, DigitalOcean App Platform, almacenamiento de objetos, Stripe.
-
-Plataforma web por suscripción que reúne cada día información dispersa sobre empresas cotizadas y la presenta de forma descriptiva en un único panel. Está en producción y en beta cerrada.
-
-* **Pipeline de datos asíncrono:** más de 3.700 empresas actualizadas cada día de mercado mediante 9 procesos programados, con el dato original guardado siempre antes de procesarlo.
-* **Recuperación de un sistema heredado:** de cero a unas 350 pruebas automatizadas, eliminación de código muerto, registro de decisiones vinculante y observabilidad propia con alertas de procesos caídos.
-* **Producto completo con costes contenidos:** suscripciones con pagos idempotentes, cinco idiomas y RGPD, todo en producción por unos 15 $ al mes.
-* **Fuente central para otros productos:** API versionada de solo lectura, con claves por aplicación, alcances, auditoría, límite de peticiones y un usuario de base de datos que no puede escribir.
-
-[**📄 Leer el Estudio de Arquitectura completo →**](./arpada-trading-system)
+[**📄 Read the full architecture study →**](./d2mantix-architecture)
 
 ---
 
-### 2. Motor de Ejecución Automatizada de Órdenes
-**Rol:** Director del proyecto de punta a punta (arquitectura, dirección del desarrollo con asistentes de IA y operación en producción)
+## 🚀 Featured Projects
+
+### 1. Arpada Trading: Market Intelligence SaaS Platform
+**Role:** Technical and product lead (architecture, leading development with AI agents, production operations)
+**Stack:** Python, Django, Celery, Redis/Valkey, PostgreSQL, DigitalOcean App Platform, object storage, Stripe.
+
+A subscription web platform that gathers scattered information about listed companies every day and presents it descriptively in a single dashboard. In production, in closed beta.
+
+* **Asynchronous data pipeline:** more than 3,700 companies updated every trading day through 9 scheduled processes, always storing the original data before processing it.
+* **Recovery of an inherited system:** from zero to around 350 automated tests, dead code removed, a binding decision log, and in-house observability with alerts for stalled processes.
+* **Complete product, contained costs:** subscriptions with idempotent payments, five languages and GDPR compliance, all in production for about $15 a month.
+* **Central source for other products:** a versioned read-only API with per-application keys, scopes, auditing, rate limiting, and a database user that cannot write.
+
+[**📄 Read the full architecture study →**](./arpada-trading-system)
+
+---
+
+### 2. Automated Order Execution Engine
+**Role:** End-to-end project lead (architecture, leading development with AI assistants, production operations)
 **Stack:** Python, FastAPI, Django, PostgreSQL, Redis, Docker Compose, Caddy, Cloudflare, DigitalOcean.
 
-Plataforma que convierte señales de trading externas en órdenes en un broker, sin intervención manual y las 24 horas, con trazabilidad completa y un panel de control. En producción en modo simulado desde octubre de 2026.
+A platform that turns external trading signals into broker orders, with no manual intervention and around the clock, full traceability and a control dashboard. In production in paper-trading mode since October 2026.
 
-* **Seguridad ante todo:** candado por bot y máquina de estados de la posición; ante la duda, el sistema pausa en vez de reintentar, de modo que una orden nunca se duplica. Validado con pruebas de concurrencia.
-* **Recuperación automática:** los cortes por desconexión del broker bajaron de hasta 16 horas a la ventana diaria de mantenimiento del propio broker.
-* **Exactitud verificada:** el primer ciclo completo cuadra al céntimo con el resultado del broker.
+* **Safety first:** a per-bot lock and a position state machine; when in doubt, the system pauses instead of retrying, so an order is never duplicated. Validated with concurrency tests.
+* **Automatic recovery:** outages caused by broker disconnections dropped from up to 16 hours to the broker's own daily maintenance window.
+* **Verified accuracy:** the first complete cycle matches the broker's result to the cent.
 
-[**📄 Leer el Estudio de Arquitectura completo →**](./automated-execution-engine)
+[**📄 Read the full architecture study →**](./automated-execution-engine)
 
 ---
 
-### 3. Hub de Datos Financieros Normalizados
-**Rol:** Director del desarrollo de principio a fin (arquitectura, calidad de datos y dirección con asistentes de IA)
+### 3. Normalised Financial Data Hub
+**Role:** End-to-end development lead (architecture, data quality, leading development with AI assistants)
 **Stack:** Python, Django, PostgreSQL, Docker, HTMX, DigitalOcean.
 
-Plataforma que recoge información financiera pública de empresas cotizadas, la homogeneiza y calcula indicadores comparables, con cada cifra enlazada a su documento de origen. La sirve a una web editorial y a otras aplicaciones a través de una API. En desarrollo avanzado.
+A platform that collects public financial information about listed companies, standardises it and computes comparable indicators, with every figure linked to its source document. It serves an editorial website and other applications through an API. In advanced development.
 
-* **Datos en bruto inmutables:** todo lo demás se recalcula desde ellos, sin red, y cualquier cifra es auditable. Un hueco antes que un número inventado.
-* **Calidad medible:** al separar los huecos estructurales de los errores reales, las alertas bajaron de 127 a 3 en 25 empresas. Más del 87 % de cobertura en los indicadores principales sobre unas 1.000 empresas, con 382 tests.
-* **Rendimiento y coste:** de 976 a 29 consultas y de 608 a 137 ms por empresa tras la auditoría, con una infraestructura prevista de unos 17 $ al mes.
+* **Immutable raw data:** everything else is recomputed from it, offline, and any figure can be audited. A gap is better than an invented number.
+* **Measurable quality:** separating structural gaps from real errors cut alerts from 127 to 3 across 25 companies. Over 87% coverage of the main indicators across about 1,000 companies, with 382 tests.
+* **Performance and cost:** from 976 to 29 queries and from 608 to 137 ms per company after the audit, on infrastructure budgeted at about $17 a month.
 
-[**📄 Leer el Estudio de Arquitectura completo →**](./financial-data-hub)
-
----
-
-## 🗂 Otros Proyectos
-
-* **[Motor editorial automatizado](./editorial-automation-engine):** pipeline diario que convierte datos financieros estructurados en contenido listo para publicar, con reglas deterministas que eligen, IA que solo redacta y un editor que aprueba. Node.js, jobs efímeros en PaaS y SSO corporativo. En producción desde agosto de 2026.
-* **[Plataforma de agregación de datos estadísticos](./statistical-data-platform):** ingesta por etapas desde varios organismos públicos y una API única y estable, con ingesta y servicio desacoplados y respaldo con restauración probada. FastAPI y PostgreSQL. Prototipo operativo.
+[**📄 Read the full architecture study →**](./financial-data-hub)
 
 ---
 
-## 🌐 Webs Estáticas y Distribución por CDN
+## 🗂 Other Projects
 
-Sitios sin servidor ni base de datos para personas que no editan código: alojamiento casi gratuito, superficie de ataque mínima, carga rápida y publicación desde el repositorio.
-
-* **[Web corporativa bilingüe para un estudio de arquitectura](./architecture-studio-website):** bilingüe nativa, modelo de contenido mínimo y factual, movimiento con mejora progresiva y una capa de descubrimiento generada en cada build (datos estructurados, sitemap y archivo legible por modelos de lenguaje) para posicionar en buscadores tradicionales y generativos.
-* **[Web corporativa para un despacho jurídico](./law-firm-website):** salida de un constructor web cerrado, con migración de dominio y correo (SPF, DKIM y DMARC) a cuentas propiedad del despacho, política de seguridad de contenido estricta y medición de conversiones. Unos 9 € al año de infraestructura, solo el dominio.
-* **[Portal editorial para una comunidad de esports](./esports-community-portal):** migración de una aplicación con servidor a un sitio estático en CDN con despliegue automático, eliminando el coste fijo del servidor, y un modelo de contenido diseñado para que la portada nunca quede vacía.
-
-**Stack común:** Hugo, Markdown con metadatos, HTML/CSS/JS sin frameworks, GitHub, hosting estático con CDN, DNS y certificados gestionados.
+* **[Automated editorial engine](./editorial-automation-engine):** a daily pipeline that turns structured financial data into publish-ready content, with deterministic rules that select, AI that only writes, and an editor who approves. Node.js, ephemeral jobs on a PaaS and corporate SSO. In production since August 2026.
+* **[Statistical data aggregation platform](./statistical-data-platform):** staged ingestion from several public agencies behind a single, stable API, with ingestion and serving decoupled and backups with tested restores. FastAPI and PostgreSQL. Working prototype.
 
 ---
 
-## 🛠 Habilidades Técnicas
+## 🌐 Static Websites and CDN Delivery
 
-| Dominio | Tecnologías y prácticas |
+Sites with no server and no database, built for people who don't edit code: near-free hosting, minimal attack surface, fast loading and publishing straight from the repository.
+
+* **[Bilingual corporate website for an architecture studio](./architecture-studio-website):** natively bilingual, a minimal factual content model, motion with progressive enhancement, and a discovery layer generated on every build (structured data, sitemap and an LLM-readable file) to rank in both traditional and generative search engines.
+* **[Corporate website for a law firm](./law-firm-website):** moving off a closed website builder, migrating domain and email (SPF, DKIM and DMARC) to accounts owned by the firm, a strict content security policy and conversion tracking. About €9 a year in infrastructure: the domain alone.
+* **[Editorial portal for an esports community](./esports-community-portal):** migrated from a server-based application to a static site on a CDN with automatic deployment, removing the fixed server cost, with a content model designed so the home page is never empty.
+
+**Shared stack:** Hugo, Markdown with front matter, HTML/CSS/JS without frameworks, GitHub, static hosting with CDN, managed DNS and certificates.
+
+---
+
+## 🛠 Technical Skills
+
+| Domain | Technologies and practices |
 | :--- | :--- |
-| **Dirección técnica** | Arquitectura por fases con criterios de cierre, registro de decisiones con contrapartidas, estrategia de pruebas, observabilidad, RGPD, dirección del desarrollo con agentes de IA |
-| **Backend y datos** | Python, Django, FastAPI, Celery, Node.js/Express, PostgreSQL, Redis/Valkey, almacenamiento de objetos compatible con S3 |
-| **Cloud y operación** | DigitalOcean (App Platform, servidores virtuales, bases de datos gestionadas), Docker y Docker Compose, Caddy, Cloudflare, systemd, despliegue continuo desde GitHub |
-| **IA** | Modelos de lenguaje en pipelines con supervisión humana, IA como redactora y nunca como fuente de cifras, búsqueda vectorial (prototipo) |
-| **Web** | Hugo, HTML/CSS/JS sin frameworks, HTMX, PWA, sistemas de diseño propios, SEO técnico y para buscadores generativos, pagos con Stripe |
+| **Technical leadership** | Phased architecture with exit criteria, decision logs with trade-offs, testing strategy, observability, GDPR, leading development with AI agents |
+| **Backend and data** | Python, Django, FastAPI, Celery, Node.js/Express, PostgreSQL, Redis/Valkey, S3-compatible object storage |
+| **Cloud and operations** | DigitalOcean (App Platform, virtual servers, managed databases), Docker and Docker Compose, Caddy, Cloudflare, systemd, continuous deployment from GitHub |
+| **AI** | Language models in human-supervised pipelines, AI as a writer and never as a source of figures, vector search (prototype) |
+| **Web** | Hugo, HTML/CSS/JS without frameworks, HTMX, PWA, in-house design systems, technical SEO and generative search optimisation, Stripe payments |
 
 ---
-*© 2026 · Portafolio de Ingeniería. Todos los proyectos son sistemas reales; el estado de cada uno (producción, beta, desarrollo o prototipo) se indica en su ficha. Nombres comerciales, fuentes de datos y detalles de negocio se omiten deliberadamente.*
+*© 2026 · Engineering Portfolio. All projects are real systems; the status of each one (production, beta, development or prototype) is stated in its write-up. Brand names, data sources and business details are deliberately omitted.*

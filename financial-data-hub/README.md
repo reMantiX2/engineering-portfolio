@@ -1,117 +1,119 @@
-# Hub de datos financieros normalizados
+# Normalised Financial Data Hub
 
-> **Estado:** en desarrollo avanzado. El núcleo funciona a diario en entorno propio; la web pública está construida y el despliegue en la nube está planificado.
-> **Rol:** director del desarrollo de principio a fin.
+🇪🇸 [Versión en español](README.es.md)
 
-Plataforma que recoge, procesa y publica información financiera de empresas cotizadas, y la sirve a otras aplicaciones y a lectores a través de una web editorial y una API.
+> **Status:** advanced development. The core runs daily in my own environment; the public website is built and cloud deployment is planned.
+> **Role:** end-to-end development lead.
 
----
-
-## 🎯 El problema
-
-La información financiera que publican las empresas cotizadas es pública, pero llega en bruto:
-
-- Cada empresa la etiqueta a su manera.
-- Los criterios cambian con los años.
-- Varía mucho según el sector.
-
-Compararlas o leerlas bien exige mucho trabajo manual. El sistema homogeneiza esa información, calcula indicadores fiables y comparables, y enlaza cada cifra al documento original del que sale.
+A platform that collects, processes and publishes financial information about listed companies, serving it to other applications and to readers through an editorial website and an API.
 
 ---
 
-## 🧭 Mi rol y método
+## 🎯 The problem
 
-No programo: el desarrollo lo ejecutan asistentes de programación con IA bajo mi dirección. Yo fijo las reglas, reviso los resultados y valido en entorno real.
+The financial information that listed companies publish is public, but it arrives raw:
 
-- **Arquitectura:** cómo se divide el sistema, dónde vive cada dato y qué se puede recalcular.
-- **Calidad de datos:** el criterio central es no publicar nunca una cifra inventada.
-- **Validación por tandas con datos reales:** de 5 a 25, 50, 600 y unas 1.000 empresas. Cada fase se verifica en mi propio entorno antes de darla por cerrada.
-- **Prioridades:** orden del roadmap y alcance de cada versión.
-- **Producción:** infraestructura, coste, copias de seguridad y calendario de tareas.
-- **Producto:** diseño de la web, privacidad (sin cookies en las páginas públicas), SEO y lanzamiento por fases.
-- **Integración:** el contrato con las aplicaciones que consumen los datos.
+- Each company labels it in its own way.
+- Criteria change over the years.
+- It varies a lot from sector to sector.
+
+Comparing companies or reading them properly takes a lot of manual work. The system standardises this information, computes reliable and comparable indicators, and links every figure to the original document it comes from.
 
 ---
 
-## ⚙️ Arquitectura
+## 🧭 My role and approach
 
-Un flujo por etapas en el que cada pieza no sabe quién la llama ni de dónde viene lo que recibe.
+I don't write the code: development is carried out by AI coding assistants under my direction. I set the rules, review the results and validate in a real environment.
+
+- **Architecture:** how the system is divided, where each piece of data lives and what can be recomputed.
+- **Data quality:** the core rule is never to publish an invented figure.
+- **Batch validation with real data:** from 5 to 25, 50, 600 and around 1,000 companies. Each phase is verified in my own environment before it is closed.
+- **Priorities:** roadmap order and the scope of each version.
+- **Production:** infrastructure, cost, backups and task schedule.
+- **Product:** website design, privacy (no cookies on public pages), SEO and a phased launch.
+- **Integration:** the contract with the applications that consume the data.
+
+---
+
+## ⚙️ Architecture
+
+A staged flow in which no piece knows who calls it or where its input comes from.
 
 ```mermaid
 graph LR
-    SRC[Fuentes públicas] --> ING[Ingesta incremental]
-    ING --> RAW[(Almacén en bruto<br/>solo se añade)]
-    RAW --> NORM[Normalización<br/>por tipo de empresa]
-    RULES[(Reglas versionadas)] -.-> NORM
-    NORM --> DER[Derivados e indicadores]
-    DER --> Q[Capa de consulta única]
-    NORM -.-> QA[Calidad y trazabilidad]
+    SRC[Public sources] --> ING[Incremental ingestion]
+    ING --> RAW[(Raw store<br/>append-only)]
+    RAW --> NORM[Normalisation<br/>by company type]
+    RULES[(Versioned rules)] -.-> NORM
+    NORM --> DER[Derived data and indicators]
+    DER --> Q[Single query layer]
+    NORM -.-> QA[Quality and traceability]
     DER -.-> QA
-    Q --> PAN[Panel interno]
-    Q --> WEB[Web pública editorial]
-    Q --> API[Feed y API]
+    Q --> PAN[Internal dashboard]
+    Q --> WEB[Public editorial site]
+    Q --> API[Feed and API]
 ```
 
-1. **Ingesta incremental:** comprueba primero si hay algo nuevo y solo entonces descarga. Respeta los límites de la fuente y reintenta ante fallos.
-2. **Almacén de datos en bruto:** solo se añade, nunca se sobrescribe. Comprimido y con escritura atómica. Es la base para reprocesar todo sin volver a descargar.
-3. **Normalización:** traduce los datos heterogéneos a un catálogo común según el tipo de empresa. No toca ni base de datos ni red, así que se prueba directamente con datos reales.
-4. **Derivados:** series trimestrales, acumulados de 12 meses, indicadores y comparativas sectoriales. Todo se puede descartar y recalcular.
-5. **Calidad y trazabilidad:** alertas técnicas que se cierran solas cuando dejan de reproducirse, y un registro por ejecución y por empresa, visible en la web.
-6. **Capa de consulta única:** todo lo que se lee para presentar pasa por ella, de modo que el panel, la web y la API usan exactamente la misma fuente.
-7. **Salidas:** panel interno de verificación, web pública editorial con textos generados a partir de los datos, y feed y API para aplicaciones cliente (en diseño).
+1. **Incremental ingestion:** it first checks whether there is anything new and only then downloads. It respects the source's limits and retries on failure.
+2. **Raw data store:** append-only, never overwritten. Compressed, with atomic writes. It is the basis for reprocessing everything without downloading again.
+3. **Normalisation:** translates heterogeneous data into a common catalogue according to company type. It touches neither the database nor the network, so it is tested directly against real data.
+4. **Derived data:** quarterly series, trailing-twelve-month figures, indicators and sector comparisons. All of it can be discarded and recomputed.
+5. **Quality and traceability:** technical alerts that close themselves once they stop reproducing, and a log per run and per company, visible on the website.
+6. **Single query layer:** everything read for presentation goes through it, so the dashboard, the website and the API use exactly the same source.
+7. **Outputs:** an internal verification dashboard, a public editorial website with text generated from the data, and a feed and API for client applications (in design).
 
 ---
 
-## 🧩 Decisiones clave
+## 🧩 Key decisions
 
-### 1. Los datos en bruto son inmutables; todo lo demás se recalcula
-- **Por qué:** permite cambiar una regla y reprocesarlo todo sin red, y auditar cualquier cifra.
-- **Contrapartida:** más almacenamiento y reprocesos completos tras cada cambio. Hizo falta una salvaguarda: un reproceso vacío nunca borra nada, y una caída brusca de datos no se guarda sin confirmación.
+### 1. Raw data is immutable; everything else is recomputed
+- **Why:** a rule can be changed and everything reprocessed offline, and any figure can be audited.
+- **Trade-off:** more storage and full reprocessing after every change. A safeguard was needed: an empty reprocess never deletes anything, and a sudden drop in data is not saved without confirmation.
 
-### 2. Un hueco antes que un número inventado, y cada cifra enlazada a su origen
-- **Por qué:** la fiabilidad es lo que diferencia el producto.
-- **Contrapartida:** la cobertura aparente es menor y hay huecos visibles. Algunos indicadores estándar no se calculan en ciertos sectores, porque saldrían engañosos.
+### 2. A gap rather than an invented number, and every figure linked to its source
+- **Why:** reliability is what sets the product apart.
+- **Trade-off:** lower apparent coverage and visible gaps. Some standard indicators are not computed for certain sectors, because they would be misleading.
 
-### 3. Etapas desacopladas y una sola capa de lectura, vigilada con tests
-- **Por qué:** cada pieza se prueba por separado, la web, la API y el panel nunca divergen, y un proveedor interno puede convertirse en un producto con varios clientes.
-- **Contrapartida:** más capas e indirección, y disciplina obligatoria: un test impide saltarse la capa de lectura.
+### 3. Decoupled stages and a single read layer, enforced by tests
+- **Why:** every piece is tested on its own, the website, API and dashboard never diverge, and an internal data provider can become a product with several clients.
+- **Trade-off:** more layers and indirection, plus mandatory discipline: a test prevents bypassing the read layer.
 
-### 4. Reglas y excepciones en ficheros versionados, nunca editadas a mano en la base de datos
-- **Por qué:** nació de una incidencia real, un ajuste manual hecho en un entorno que no llegó al otro. Desde entonces, toda decisión de clasificación es reproducible.
-- **Contrapartida:** cada ajuste pasa por el repositorio y un comando de carga. Es menos ágil.
+### 4. Rules and exceptions in versioned files, never edited by hand in the database
+- **Why:** it came out of a real incident, a manual adjustment made in one environment that never reached the other. Since then, every classification decision is reproducible.
+- **Trade-off:** every adjustment goes through the repository and a load command. It is less agile.
 
-### 5. Despliegue mínimo
-Un único servidor, sin colas distribuidas ni caché, con tareas en el planificador del sistema.
-- **Por qué:** coste previsto de unos 17 $ al mes con copias incluidas, menos piezas que mantener y escalado con criterios explícitos (uso de memoria, tamaño del universo, apertura al público).
-- **Contrapartida:** sin concurrencia ni alta disponibilidad al principio. Crecer exigirá migrar a tareas distribuidas.
+### 5. Minimal deployment
+A single server, with no distributed queues or cache, and tasks in the system scheduler.
+- **Why:** an expected cost of about $17 a month including backups, fewer parts to maintain, and scaling based on explicit criteria (memory use, universe size, opening to the public).
+- **Trade-off:** no concurrency or high availability at first. Growth will require migrating to distributed tasks.
 
 ---
 
-## ⏳ Evolución (agosto – noviembre de 2026)
+## ⏳ Evolution (August – November 2026)
 
-| Etapa | Qué cambió |
+| Stage | What changed |
 | :--- | :--- |
-| Prototipo | Scripts sueltos con 5 empresas, portados después a un framework con modelos, migraciones y administración. |
-| Ingesta incremental | Detección de novedades antes de descargar, para ahorrar peticiones. |
-| Normalización por tipo de empresa | Rediseñada varias veces tras probar con datos reales. Al separar los huecos estructurales de los errores reales, las alertas bajaron de 127 a 3 en 25 empresas, y de 667 a 360 en 600. |
-| Escalado | Derivados e indicadores, con pruebas sobre 25, 50, 600 y unas 1.000 empresas. |
-| Auditoría de calidad y rendimiento | Escritura atómica y comprimida, bloqueo por empresa para procesos concurrentes y muchas menos consultas por empresa. |
-| Cambio de alcance | De proveedor de datos para una sola aplicación a hub con varios clientes y producto propio, con web pública y un contrato de integración por feed. |
+| Prototype | Loose scripts with 5 companies, later ported to a framework with models, migrations and an admin. |
+| Incremental ingestion | Detecting new data before downloading, to save requests. |
+| Normalisation by company type | Redesigned several times after testing with real data. Separating structural gaps from real errors brought alerts down from 127 to 3 across 25 companies, and from 667 to 360 across 600. |
+| Scaling | Derived data and indicators, tested on 25, 50, 600 and about 1,000 companies. |
+| Quality and performance audit | Atomic, compressed writes, per-company locking for concurrent processes, and far fewer queries per company. |
+| Change of scope | From a data provider for a single application to a hub with several clients and its own product, with a public website and a feed-based integration contract. |
 
 ---
 
-## 📊 Resultados
+## 📊 Results
 
-Cifras de la documentación del proyecto. Todavía no hay usuarios externos ni métricas de uso.
+Figures from the project documentation. There are no external users or usage metrics yet.
 
-- **Volumen:** unas 1.000 empresas procesadas sobre un universo registrado de unas 8.000, con 2,2 GB de datos en bruto.
-- **Cobertura de indicadores en empresas generales:** margen operativo 92,7 %, EBITDA 87,7 % y ROE 92,0 %.
-- **Rendimiento tras la auditoría:** de 976 a 29 consultas y de 608 a 137 ms por empresa. La normalización completa de 600 empresas tarda 73 s.
-- **Calidad:** 382 tests automatizados, verificados contra la base de datos real.
-- **Coste:** infraestructura prevista de unos 17 $ al mes.
+- **Volume:** about 1,000 companies processed out of a registered universe of about 8,000, with 2.2 GB of raw data.
+- **Indicator coverage for general companies:** operating margin 92.7%, EBITDA 87.7% and ROE 92.0%.
+- **Performance after the audit:** from 976 to 29 queries and from 608 to 137 ms per company. Full normalisation of 600 companies takes 73 s.
+- **Quality:** 382 automated tests, verified against the real database.
+- **Cost:** infrastructure budgeted at about $17 a month.
 
 ---
 
 ## 🛠 Stack
 
-Python · Django · PostgreSQL · Docker y Docker Compose · plantillas renderizadas en servidor con HTMX · DigitalOcean (servidor y copias en almacenamiento de objetos, planificado).
+Python · Django · PostgreSQL · Docker and Docker Compose · server-rendered templates with HTMX · DigitalOcean (server and backups to object storage, planned).

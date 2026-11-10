@@ -1,102 +1,104 @@
-# Motor editorial automatizado
+# Automated Editorial Engine
 
-> **Estado:** en producción y en uso diario interno desde agosto de 2026, con evolución activa.
-> **Rol:** dirección de producto y técnica, de punta a punta.
+🇪🇸 [Versión en español](README.es.md)
 
-Pipeline que convierte cada día un flujo de datos financieros estructurados en contenido editorial listo para publicar: posts para redes, piezas visuales, avisos internos y un newsletter semanal. Elimina el trabajo manual de analizar, redactar y maquetar, y deja la decisión final en manos de un editor humano.
+> **Status:** in production and in daily internal use since August 2026, under active development.
+> **Role:** end-to-end product and technical lead.
 
----
-
-## 🧭 Mi rol y método
-
-- **Producto:** definí qué tenía que hacer el sistema.
-- **Arquitectura:** tomé las decisiones técnicas y asumí sus contrapartidas.
-- **Infraestructura y costes:** elegí la plataforma y el modelo de costes.
-- **Seguridad y acceso:** fijé los criterios.
-- **Operación:** lo llevé a producción y me ocupo del día a día y de las incidencias.
-- **Dirección del desarrollo:** la implementación la hicieron agentes de IA de programación a partir de mis especificaciones, con revisión de cada entrega.
+A pipeline that turns a daily stream of structured financial data into publish-ready editorial content: social media posts, visual pieces, internal alerts and a weekly newsletter. It removes the manual work of analysing, writing and laying out, and leaves the final decision to a human editor.
 
 ---
 
-## ⚙️ Arquitectura
+## 🧭 My role and approach
+
+- **Product:** I defined what the system had to do.
+- **Architecture:** I made the technical decisions and took on their trade-offs.
+- **Infrastructure and costs:** I chose the platform and the cost model.
+- **Security and access:** I set the criteria.
+- **Operations:** I took it to production and handle day-to-day running and incidents.
+- **Leading development:** implementation was carried out by AI coding agents from my specifications, with every delivery reviewed.
+
+---
+
+## ⚙️ Architecture
 
 ```mermaid
 graph LR
-    SRC[API de la plataforma principal] -->|clave con ámbitos| DAILY
+    SRC[Main platform API] -->|scoped key| DAILY
 
-    subgraph PAAS["PaaS gestionado"]
-        DAILY[Job diario] --> SEL[Preselección determinista]
-        SEL --> LLM[Redacción con modelo de lenguaje]
-        WEEKLY[Job semanal]
-        PANEL[Panel web interno / PWA]
+    subgraph PAAS["Managed PaaS"]
+        DAILY[Daily job] --> SEL[Deterministic pre-selection]
+        SEL --> LLM[Writing with a language model]
+        WEEKLY[Weekly job]
+        PANEL[Internal web panel / PWA]
     end
 
-    LLM --> DB[(Base de datos relacional)]
+    LLM --> DB[(Relational database)]
     WEEKLY --> DB
     DB --> PANEL
-    DAILY -.->|aviso| CH[Email y canal privado]
+    DAILY -.->|alert| CH[Email and private channel]
     WEEKLY --> NL[Newsletter]
-    PANEL -->|plantilla en el navegador| IMG[Piezas visuales]
-    SSO[SSO corporativo + lista blanca] --- PANEL
+    PANEL -->|template in the browser| IMG[Visual pieces]
+    SSO[Corporate SSO + allowlist] --- PANEL
 ```
 
-- **Fuente de datos:** la API interna de la plataforma principal, con autenticación por clave y permisos por ámbito.
-- **Job diario programado:** obtiene los datos, aplica una preselección determinista, genera el contenido con un modelo de lenguaje, lo guarda y avisa.
-- **Job semanal:** genera y envía un newsletter editorial con el histórico de la semana.
-- **Base de datos relacional:** inventario diario, contenido generado, configuración y un registro paso a paso de cada ejecución.
-- **Panel web interno:** dashboard, revisión de contenido, generación bajo demanda, histórico, ajustes y log de ejecuciones. Se instala en el móvil como app (PWA).
-- **Piezas visuales:** se generan desde plantilla en el navegador del editor, que las descarga listas para publicar.
-- **Canales de salida:** email y un canal privado de mensajería, ambos con enlace al panel.
-- **Acceso:** login corporativo único (SSO) restringido al dominio, lista blanca y sesiones firmadas.
+- **Data source:** the main platform's internal API, with key authentication and scoped permissions.
+- **Scheduled daily job:** fetches the data, applies a deterministic pre-selection, generates content with a language model, stores it and sends an alert.
+- **Weekly job:** generates and sends an editorial newsletter with the week's history.
+- **Relational database:** daily inventory, generated content, configuration and a step-by-step log of every run.
+- **Internal web panel:** dashboard, content review, on-demand generation, history, settings and run log. It installs on mobile as an app (PWA).
+- **Visual pieces:** generated from a template in the editor's browser, which downloads them ready to publish.
+- **Output channels:** email and a private messaging channel, both linking to the panel.
+- **Access:** corporate single sign-on (SSO) restricted to the domain, an allowlist and signed sessions.
 
 ---
 
-## 🧩 Decisiones clave
+## 🧩 Key decisions
 
-### 1. Piezas visuales generadas en el cliente, no en el servidor
-- **Por qué:** sin navegador headless en el servidor; menos memoria, menos coste, sin dependencias pesadas y un despliegue ligero.
-- **Contrapartida:** la imagen no va incrustada en el email ni en la mensajería; se abre desde un enlace y se descarga a mano.
+### 1. Visual pieces generated on the client, not the server
+- **Why:** no headless browser on the server; less memory, lower cost, no heavy dependencies and a lightweight deployment.
+- **Trade-off:** the image isn't embedded in the email or the messages; it is opened from a link and downloaded by hand.
 
-### 2. Jobs programados efímeros sobre PaaS, en vez de un servidor 24/7
-- **Por qué:** solo se paga el tiempo de ejecución, no hay servidores que mantener y el despliegue es automático desde el repositorio.
-- **Contrapartida:** dependencia del planificador del proveedor, ejecuciones sin estado y menos control fino del entorno.
+### 2. Ephemeral scheduled jobs on a PaaS instead of a 24/7 server
+- **Why:** you only pay for execution time, there are no servers to maintain, and deployment is automatic from the repository.
+- **Trade-off:** dependence on the provider's scheduler, stateless runs and less fine-grained control of the environment.
 
-### 3. Humano en el bucle: el sistema propone y no publica solo
-- **Por qué:** es contenido financiero con riesgo reputacional; el control editorial es innegociable.
-- **Contrapartida:** un paso manual por publicación, y el volumen depende del tiempo del editor.
+### 3. Human in the loop: the system proposes and never publishes on its own
+- **Why:** it's financial content with reputational risk; editorial control is non-negotiable.
+- **Trade-off:** one manual step per publication, and volume depends on the editor's time.
 
-### 4. Preselección determinista antes de la IA
-Una capa de reglas reproducible, configurable desde el panel, decide qué merece contenido. El modelo de lenguaje solo redacta.
-- **Por qué:** coste de IA acotado, resultados predecibles y auditables, y menos alucinaciones en la selección.
-- **Contrapartida:** reglas rígidas que hay que ajustar a mano y que pueden dejar fuera casos interesantes.
+### 4. Deterministic pre-selection before the AI
+A reproducible rules layer, configurable from the panel, decides what deserves content. The language model only writes.
+- **Why:** bounded AI cost, predictable and auditable results, and fewer hallucinations in what gets selected.
+- **Trade-off:** rigid rules that must be tuned by hand and may leave out interesting cases.
 
-### 5. Base de datos compartida con la plataforma principal, con esquema e identidad propios
-- **Por qué:** reutiliza infraestructura existente sin acoplar los ciclos de despliegue ni la autenticación.
-- **Contrapartida:** dos sistemas de identidad que mantener, y la separación entre esquemas depende de convenciones.
+### 5. A database shared with the main platform, with its own schema and identity
+- **Why:** reuses existing infrastructure without coupling deployment cycles or authentication.
+- **Trade-off:** two identity systems to maintain, and the separation between schemas relies on conventions.
 
 ---
 
-## ⏳ Evolución
+## ⏳ Evolution
 
-| Versión | Qué cambió |
+| Version | What changed |
 | :--- | :--- |
-| v0 | Generador visual en un solo HTML y prompt editorial usados a mano, pegando los datos en un chat. |
-| v1 | Primer pipeline automatizado con renderizado de imágenes en el servidor. Descartado por coste y peso. |
-| v2 | Reescrito como panel web con base de datos y job programado. El login, que iba a delegarse en la plataforma principal, pasó a un SSO corporativo propio para desacoplar ambos sistemas. |
-| Refactor | El servidor monolítico (~900 líneas) pasó a routers modulares (~60 líneas en el servidor), las vistas a plantillas y los estilos a un sistema de tokens de diseño. |
-| Ampliaciones | Log de ejecuciones, newsletter semanal, sincronización de destinatarios con la plataforma principal, PWA, canal privado de avisos y documentación operativa (runbooks, plan técnico y contexto para agentes de IA). |
+| v0 | A single-file HTML visual generator and an editorial prompt used by hand, pasting the data into a chat. |
+| v1 | First automated pipeline with server-side image rendering. Discarded due to cost and weight. |
+| v2 | Rewritten as a web panel with a database and a scheduled job. Login, initially meant to be delegated to the main platform, moved to its own corporate SSO to decouple both systems. |
+| Refactor | The monolithic server (~900 lines) moved to modular routers (~60 lines in the server), views moved to templates and styles to a design-token system. |
+| Extensions | Run log, weekly newsletter, recipient sync with the main platform, PWA, private alert channel and operational documentation (runbooks, technical plan and context for AI agents). |
 
 ---
 
-## 📊 Resultados
+## 📊 Results
 
-- Más de 150 ejecuciones del job diario en producción (finales de octubre de 2026).
-- Del orden de 40 activos analizados en una ejecución típica.
+- More than 150 runs of the daily job in production (late October 2026).
+- Around 40 assets analysed in a typical run.
 
-No hay datos de audiencia, alcance de las publicaciones ni aperturas del newsletter.
+There is no data on audience, post reach or newsletter opens.
 
 ---
 
 ## 🛠 Stack
 
-Node.js · Express · plantillas EJS · PostgreSQL gestionado · DigitalOcean (servicio web y jobs programados) con despliegue continuo desde GitHub · SSO corporativo · email transaccional y bot de mensajería · Docker (base de datos local) · modelos de lenguaje.
+Node.js · Express · EJS templates · managed PostgreSQL · DigitalOcean (web service and scheduled jobs) with continuous deployment from GitHub · corporate SSO · transactional email and a messaging bot · Docker (local database) · language models.

@@ -1,106 +1,108 @@
-# Portal editorial para una comunidad de esports
+# Editorial Portal for an Esports Community
 
-> **Estado:** en producción en su dominio propio.
-> **Rol:** dirección técnica completa, de los requisitos a producción.
+🇪🇸 [Versión en español](README.es.md)
 
-Migración de un portal de contenidos sobre un videojuego de nicho, que pasó de una aplicación web con servidor a un sitio estático generado desde Markdown y servido por CDN.
+> **Status:** in production on its own domain.
+> **Role:** full technical lead, from requirements to production.
 
----
-
-## 🎯 El problema
-
-El portal funcionaba como aplicación web tradicional en un servidor de pago: coste fijo mensual y mantenimiento técnico para una web que se actualiza poco. Hacía falta una plataforma que:
-
-- tuviera aspecto profesional;
-- pudiera mantenerla sola una persona sin perfil técnico;
-- costara lo mínimo en alojamiento;
-- permitiera publicar artículos, organizarlos por categorías y etiquetas e incrustar vídeo.
+Migration of a content portal about a niche video game from a server-based web application to a static site generated from Markdown and served through a CDN.
 
 ---
 
-## 🧭 Mi rol y método
+## 🎯 The problem
 
-El desarrollo se ejecutó con asistencia de IA bajo mi dirección.
+The portal ran as a traditional web application on a paid server: a fixed monthly cost and technical maintenance for a site that is rarely updated. It needed a platform that:
 
-- **Requisitos:** los recogí y los convertí en un documento con decisiones y riesgos registrados.
-- **Arquitectura:** elegí el modelo estático con CDN, el generador y el flujo de publicación.
-- **Modelo de contenido:** tipos, categorías, etiquetas y organización de recursos.
-- **Diseño visual:** del prototipo a las plantillas de producción, con criterios cerrados de paleta, tipografía e interacción.
-- **Flujo editorial:** diseñado para que quien mantiene el portal solo tenga que escribir y publicar.
-- **Producción:** dominio, DNS, certificados, redirecciones y dominio canónico.
+- looked professional;
+- could be maintained by one non-technical person alone;
+- cost as little as possible to host;
+- allowed publishing articles, organising them by categories and tags, and embedding video.
 
 ---
 
-## ⚙️ Arquitectura
+## 🧭 My role and approach
+
+Development was carried out with AI assistance under my direction.
+
+- **Requirements:** I gathered them and turned them into a document with recorded decisions and risks.
+- **Architecture:** I chose the static model with a CDN, the generator and the publishing workflow.
+- **Content model:** types, categories, tags and asset organisation.
+- **Visual design:** from prototype to production templates, with fixed criteria for palette, typography and interaction.
+- **Editorial workflow:** designed so that whoever maintains the portal only has to write and publish.
+- **Production:** domain, DNS, certificates, redirects and canonical domain.
+
+---
+
+## ⚙️ Architecture
 
 ```mermaid
 graph LR
-    subgraph REPO["Repositorio versionado"]
-        ART[Artículos autocontenidos<br/>Markdown + imágenes]
-        TPL[Plantillas modulares]
+    subgraph REPO["Versioned repository"]
+        ART[Self-contained articles<br/>Markdown + images]
+        TPL[Modular templates]
     end
 
-    ART --> GEN[Generador estático]
+    ART --> GEN[Static generator]
     TPL --> GEN
-    GEN -->|cada push| CDN[Hosting estático con CDN global]
-    CDN --> USR((Lectores))
-    USR -.-> JS[JS ligero en el navegador]
+    GEN -->|every push| CDN[Static hosting with global CDN]
+    CDN --> USR((Readers))
+    USR -.-> JS[Light in-browser JS]
 ```
 
-- **Capa de contenido:** artículos en Markdown con metadatos estructurados. Cada artículo es una carpeta autocontenida con sus imágenes.
-- **Capa de presentación:** plantillas modulares (navegación, tarjetas de artículo en tres formatos, bloques temáticos, barra lateral y pie) que se combinan para formar las páginas.
-- **Generación:** en cada build, el generador convierte contenido y plantillas en HTML y calcula automáticamente listados, contadores por categoría y páginas de taxonomía.
-- **Distribución:** el repositorio está conectado a un hosting estático con CDN global, y cada publicación dispara un despliegue automático.
-- **Interactividad:** JavaScript ligero en el navegador, sin backend propio.
+- **Content layer:** articles in Markdown with structured metadata. Each article is a self-contained folder with its images.
+- **Presentation layer:** modular templates (navigation, article cards in three formats, themed blocks, sidebar and footer) combined to build the pages.
+- **Generation:** on every build, the generator turns content and templates into HTML and automatically computes listings, per-category counts and taxonomy pages.
+- **Delivery:** the repository is connected to static hosting with a global CDN, and every publication triggers an automatic deployment.
+- **Interactivity:** light in-browser JavaScript, with no backend of its own.
 
 ---
 
-## 🧩 Decisiones clave
+## 🧩 Key decisions
 
-### 1. De aplicación con servidor a sitio 100 % estático en CDN
-- **Por qué:** desaparece el coste fijo del servidor, el mantenimiento y la superficie de ataque se reducen casi a cero, y mejora el rendimiento.
-- **Contrapartida:** cualquier función dinámica, como mostrar un estado en tiempo real, necesita lógica en el navegador o un servicio externo, lo que rompe el estático puro y añade dependencias.
+### 1. From a server-based application to a 100% static site on a CDN
+- **Why:** the fixed server cost disappears, maintenance and attack surface drop to almost nothing, and performance improves.
+- **Trade-off:** any dynamic feature, such as showing a real-time status, needs in-browser logic or an external service, which breaks pure static and adds dependencies.
 
-### 2. Un generador distribuido como ejecutable único, sin dependencias
-- **Por qué:** quien mantiene el portal no es técnico, así que no hay entornos que instalar ni paquetes que gestionar, y el build es muy rápido.
-- **Contrapartida:** las plantillas son menos flexibles que un framework de componentes. El prototipo de diseño, hecho con componentes reactivos, hubo que traducirlo a plantillas estáticas y separar el estado interactivo en JavaScript aparte. Además, el sitio se reconstruye entero en cada build.
+### 2. A generator distributed as a single, dependency-free executable
+- **Why:** the person maintaining the portal isn't technical, so there are no environments to install or packages to manage, and builds are very fast.
+- **Trade-off:** templates are less flexible than a component framework. The design prototype, built with reactive components, had to be translated into static templates with interactive state split out into separate JavaScript. The site is also rebuilt in full on every build.
 
-### 3. Publicación desde el repositorio con despliegue automático
-- **Por qué:** historial completo de cambios, vuelta atrás y un flujo único: escribir, subir y publicado. La titularidad de las cuentas queda en manos del responsable del portal.
-- **Contrapartida:** hay que aprender un flujo mínimo de control de versiones.
+### 3. Publishing from the repository with automatic deployment
+- **Why:** full change history, rollback, and a single flow: write, push, published. Account ownership stays with whoever runs the portal.
+- **Trade-off:** a minimal version-control workflow has to be learned.
 
-### 4. Modelo de contenido unificado
-Un solo tipo de contenido, un conjunto cerrado de categorías y etiquetas libres.
-- **Por qué:** la portada muestra siempre lo último publicado, sea de la categoría que sea, así que nunca queda vacía aunque una sección tenga poco volumen. Las categorías cerradas mantienen la navegación estable y las etiquetas dan granularidad sin tocar la estructura.
-- **Contrapartida:** hace falta una categoría «cajón» para lo que no encaja, y se pierden las plantillas específicas por tipo de contenido.
+### 4. A unified content model
+A single content type, a closed set of categories and free tags.
+- **Why:** the home page always shows the latest content, whatever its category, so it is never empty even when a section has little volume. Closed categories keep navigation stable and tags add granularity without touching the structure.
+- **Trade-off:** a catch-all category is needed for what doesn't fit, and type-specific templates are lost.
 
-### 5. Artículos autocontenidos
-Contenido e imágenes en la misma carpeta.
-- **Por qué:** cada pieza es portable y fácil de revisar, mover o borrar, y las referencias internas no se rompen.
-- **Contrapartida:** más carpetas que gestionar e imágenes que no se comparten entre artículos.
+### 5. Self-contained articles
+Content and images in the same folder.
+- **Why:** each piece is portable and easy to review, move or delete, and internal references don't break.
+- **Trade-off:** more folders to manage, and images aren't shared between articles.
 
 ---
 
-## ⏳ Evolución
+## ⏳ Evolution
 
-| Área | Antes | Ahora |
+| Area | Before | Now |
 | :--- | :--- | :--- |
-| Plataforma | Aplicación web dinámica en un servidor virtual de pago. | Sitio estático generado desde Markdown, en hosting con CDN y despliegue continuo. Se arrancó con contenido nuevo y solo se migraron piezas seleccionadas. |
-| Diseño | Prototipo visual con componentes reactivos. | Plantillas estáticas modulares con JavaScript mínimo. |
-| Contenido | Secciones separadas por tipo y unas ocho categorías temáticas. | Un único tipo de artículo con cinco categorías cerradas y etiquetas libres, para que la portada no dependa del volumen de una sola sección. |
+| Platform | Dynamic web application on a paid virtual server. | Static site generated from Markdown, on CDN hosting with continuous deployment. It started with fresh content, migrating only selected pieces. |
+| Design | Visual prototype with reactive components. | Modular static templates with minimal JavaScript. |
+| Content | Sections separated by type and about eight thematic categories. | A single article type with five closed categories and free tags, so the home page doesn't depend on the volume of any one section. |
 
 ---
 
-## 📊 Resultados
+## 📊 Results
 
-- Sin servidor dedicado ni su coste fijo mensual.
-- En producción en el dominio propio, con HTTPS.
-- La persona responsable publica sin intervención técnica.
+- No dedicated server and no fixed monthly cost.
+- In production on its own domain, with HTTPS.
+- The person in charge publishes without technical help.
 
-No hay métricas registradas de tráfico ni de rendimiento.
+No traffic or performance metrics have been recorded.
 
 ---
 
 ## 🛠 Stack
 
-Markdown con front matter · Hugo · HTML, CSS y JavaScript sin frameworks · GitHub con despliegue automático en cada push · hosting estático con CDN, DNS y certificados gestionados · sin base de datos.
+Markdown with front matter · Hugo · HTML, CSS and JavaScript without frameworks · GitHub with automatic deployment on every push · static hosting with CDN, managed DNS and certificates · no database.

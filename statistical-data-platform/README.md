@@ -1,107 +1,109 @@
-# Plataforma de agregación de datos estadísticos
+# Statistical Data Aggregation Platform
 
-> **Estado:** prototipo operativo en entorno local, con API, panel y respaldo verificado. Pendiente del despliegue en la nube y de incorporar nuevas fuentes.
-> **Rol:** dirección técnica y de producto.
+🇪🇸 [Versión en español](README.es.md)
 
-Plataforma que recoge datos estadísticos públicos de varios organismos, los guarda en una base propia y los sirve mediante una API de consulta única y estable.
+> **Status:** working prototype in a local environment, with API, dashboard and verified backups. Cloud deployment and new sources are pending.
+> **Role:** technical and product lead.
 
----
-
-## 🎯 El problema
-
-Los datos estadísticos públicos están repartidos entre varios organismos, y cada uno:
-
-- usa sus propios formatos, códigos y calendarios;
-- corrige sus cifras con el tiempo.
-
-Quien quiere usarlos tiene que conocer cómo funciona cada fuente. El sistema absorbe esa complejidad y ofrece una sola interfaz estable.
+A platform that collects public statistical data from several agencies, stores it in its own database and serves it through a single, stable query API.
 
 ---
 
-## 🧭 Mi rol y método
+## 🎯 The problem
 
-La implementación la dirigí mediante especificaciones y revisión, no programando: la ejecutaron asistentes de IA a partir de esas especificaciones.
+Public statistical data is spread across several agencies, and each one:
 
-- **Objetivo y alcance** del producto.
-- **Arquitectura** y decisiones técnicas.
-- **Secuencia:** qué se construye, en qué orden y qué se deja preparado pero sin activar.
-- **Calidad y trazabilidad** de los datos.
-- **Operación:** llevé el sistema hasta un entorno operativo con respaldo verificado.
+- uses its own formats, codes and release calendars;
+- revises its figures over time.
+
+Anyone who wants to use the data has to understand how each source works. The system absorbs that complexity and offers a single, stable interface.
 
 ---
 
-## ⚙️ Arquitectura
+## 🧭 My role and approach
+
+I led the implementation through specifications and review, not by programming: AI assistants carried it out from those specifications.
+
+- **Goal and scope** of the product.
+- **Architecture** and technical decisions.
+- **Sequencing:** what gets built, in what order, and what is left ready but switched off.
+- **Data quality and traceability.**
+- **Operations:** I took the system to a working environment with verified backups.
+
+---
+
+## ⚙️ Architecture
 
 ```mermaid
 graph LR
-    SRC[Fuentes públicas] --> ING
+    SRC[Public sources] --> ING
 
-    subgraph LOCAL["Entorno local (fuente de verdad)"]
-        ING[Ingesta por lotes] --> RAW[(Copia original<br/>inmutable)]
-        RAW --> MID[(Datos estructurados<br/>intermedios)]
-        MID --> DB[(Modelo de consulta)]
-        DIFF[Detección de cambios] -.->|actualizaciones| DB
+    subgraph LOCAL["Local environment (source of truth)"]
+        ING[Batch ingestion] --> RAW[(Immutable<br/>original copy)]
+        RAW --> MID[(Intermediate<br/>structured data)]
+        MID --> DB[(Query model)]
+        DIFF[Change detection] -.->|updates| DB
     end
 
-    DB --> API[API de solo lectura]
-    DB --> PAN[Panel de supervisión]
-    RAW -.->|respaldo| OBJ[(Almacenamiento de objetos)]
-    DB -.->|respaldo| OBJ
+    DB --> API[Read-only API]
+    DB --> PAN[Monitoring dashboard]
+    RAW -.->|backup| OBJ[(Object storage)]
+    DB -.->|backup| OBJ
 ```
 
-- **Ingesta:** un proceso por lotes descarga los datos de origen y los hace pasar por etapas: copia original intacta, datos estructurados intermedios y modelo final de consulta. Cada etapa guarda su resultado y registra lo que hizo.
-- **Servicio:** una API de solo lectura que consulta únicamente la base propia y nunca llama a fuentes externas en tiempo real, más un panel interno de supervisión.
-- **Detección de cambios:** un proceso aparte compara cada nueva publicación de la fuente con lo ya guardado y prepara las actualizaciones, que se aplican en un paso separado.
-- **Respaldo:** copia de los datos irrecuperables y de la base en almacenamiento de objetos, con la restauración probada de punta a punta.
-- **Acoplamiento mínimo:** ingesta y servicio solo se comunican a través de la base de datos.
+- **Ingestion:** a batch process downloads the source data and passes it through stages: untouched original copy, intermediate structured data and final query model. Each stage stores its output and logs what it did.
+- **Serving:** a read-only API that only queries the platform's own database and never calls external sources in real time, plus an internal monitoring dashboard.
+- **Change detection:** a separate process compares each new release from the source with what is already stored and prepares the updates, which are applied in a separate step.
+- **Backups:** copies of irreplaceable data and of the database in object storage, with restores tested end to end.
+- **Minimal coupling:** ingestion and serving only communicate through the database.
 
 ---
 
-## 🧩 Decisiones clave
+## 🧩 Key decisions
 
-### 1. Separar ingesta y servicio
-- **Por qué:** si una fuente cae o cambia de formato, falla la ingesta, no la API.
-- **Contrapartida:** los datos llegan con cierto retraso respecto a la fuente, y hace falta almacenamiento y un pipeline propios.
+### 1. Separate ingestion from serving
+- **Why:** if a source goes down or changes format, ingestion fails, not the API.
+- **Trade-off:** data lags somewhat behind the source, and dedicated storage and a pipeline are needed.
 
-### 2. Pipeline por etapas con copia original inmutable y registro de ejecución
-- **Por qué:** un error de interpretación se corrige reprocesando desde lo guardado, sin volver a descargar, y cada fallo deja rastro.
-- **Contrapartida:** más almacenamiento por cada edición descargada y más piezas que mantener.
+### 2. Staged pipeline with an immutable original copy and run logs
+- **Why:** an interpretation error is fixed by reprocessing from what is stored, without downloading again, and every failure leaves a trace.
+- **Trade-off:** more storage per downloaded release and more parts to maintain.
 
-### 3. Ingesta en local y solo la capa de consulta en la nube
-- **Por qué:** los datos cambian despacio, así que la parte en la nube puede ser mínima y estable.
-- **Contrapartida:** la máquina local pasa a ser la fuente de verdad. Eso obligó a montar un respaldo con restauración probada, cuyo destino se cambia solo con configuración.
+### 3. Ingestion stays local; only the query layer goes to the cloud
+- **Why:** the data changes slowly, so the cloud side can stay minimal and stable.
+- **Trade-off:** the local machine becomes the source of truth. That required backups with tested restores, whose destination can be swapped through configuration alone.
 
-### 4. API con consultas dinámicas en lugar de ficheros estáticos
-- **Por qué:** permite filtrar y pedir solo lo que ha cambiado desde una fecha.
-- **Contrapartida:** hay que mantener un servidor en vez de un simple alojamiento de ficheros.
+### 4. An API with dynamic queries instead of static files
+- **Why:** it allows filtering and requesting only what has changed since a given date.
+- **Trade-off:** a server has to be maintained instead of simple file hosting.
 
-### 5. Automatizar por fases
-La actualización incremental y el respaldo están construidos y probados, pero se lanzan a mano hasta haber observado ciclos reales de publicación.
-- **Por qué:** no automatizar un comportamiento que todavía no se conoce.
-- **Contrapartida:** operación manual mientras tanto.
+### 5. Automate in phases
+Incremental updates and backups are built and tested, but they are run by hand until real release cycles have been observed.
+- **Why:** to avoid automating behaviour that isn't yet understood.
+- **Trade-off:** manual operation in the meantime.
 
 ---
 
-## ⏳ Evolución
+## ⏳ Evolution
 
-| Etapa | Qué cambió |
+| Stage | What changed |
 | :--- | :--- |
-| Idea inicial | Un intermediario con autenticación por delante de las APIs públicas. |
-| Primer cambio | Ingesta propia y API independiente, para no depender de terceros en tiempo real. |
-| Infraestructura | El plan de desplegarlo todo en la nube se sustituyó por el reparto entre entorno local y nube. |
-| Después | Respaldo, detección incremental de cambios y documentación operativa. |
+| Initial idea | An authenticated intermediary sitting in front of public APIs. |
+| First change | In-house ingestion and an independent API, to avoid depending on third parties in real time. |
+| Infrastructure | The plan to deploy everything to the cloud was replaced by a split between local environment and cloud. |
+| Afterwards | Backups, incremental change detection and operational documentation. |
 
 ---
 
-## 📊 Resultados
+## 📊 Results
 
-- Primera fuente cargada, con unos 9 millones de observaciones.
-- Restauración completa desde el respaldo, verificada comparando conteos.
+- First source loaded, with about 9 million observations.
+- Full restore from backup, verified by comparing record counts.
 
-Todavía no hay datos de usuarios, tráfico ni rendimiento.
+There is no user, traffic or performance data yet.
 
 ---
 
 ## 🛠 Stack
 
-Python · FastAPI · PostgreSQL · Docker Compose · migraciones de esquema versionadas · almacenamiento de objetos compatible con S3.
+Python · FastAPI · PostgreSQL · Docker Compose · versioned schema migrations · S3-compatible object storage.

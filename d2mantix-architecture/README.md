@@ -1,115 +1,117 @@
-# D2M: Plataforma de inteligencia editorial y datos
+# D2M: Editorial Intelligence and Data Platform
 
-> **Estado:** mixto. Pipeline editorial y servicios de alertas en producción; extractor de datos operativo; portal web nuevo en desarrollo.
-> **Rol:** director técnico y de producto.
+🇪🇸 [Versión en español](README.es.md)
 
-Plataforma para una comunidad de videojuegos de habla hispana que cubre a diario la actualidad de una franquicia con varios títulos activos. Automatiza tres trabajos que antes se hacían a mano: preparar la cobertura editorial, mantener una base de datos de referencia por título y versión, y publicarlo todo en un portal web multilingüe.
+> **Status:** mixed. Editorial pipeline and alert services in production; data extractor operational; new web portal in development.
+> **Role:** technical and product lead.
 
----
-
-## 🎯 El problema
-
-- Separar a diario los hechos confirmados de los rumores.
-- Publicar en varios canales sin repetir contenido.
-- Mantener una base de referencia fiable de los datos de cada título y versión.
-
-Hecho a mano, consumía mucho tiempo y acumulaba errores.
+A platform for a Spanish-speaking gaming community that covers, every day, the news around a franchise with several active titles. It automates three jobs that used to be done by hand: preparing editorial coverage, maintaining a reference database per title and version, and publishing all of it on a multilingual web portal.
 
 ---
 
-## 🧭 Mi rol y método
+## 🎯 The problem
 
-No programo: defino, decido y valido.
+- Separating confirmed facts from rumours every day.
+- Publishing across several channels without repeating content.
+- Keeping a reliable reference base for the data of every title and version.
 
-- **Arquitectura:** diseñé el sistema completo y lo dividí en fases con criterios de cierre explícitos.
-- **Dirección del desarrollo:** la implementación la ejecutan asistentes de IA de código, que trabajan con especificaciones y reglas de proyecto redactadas por mí.
-- **Calidad y seguridad:** fijé las reglas del sistema: solo lectura sobre los datos de origen, validación y tests antes de cada commit, y aprobación humana antes de cualquier publicación.
-- **Validación:** contrasto los resultados con la fuente real y apruebo lo que se publica.
-- **Operación:** servidor, servicios y despliegue en producción.
+Done by hand, this took a lot of time and accumulated errors.
 
 ---
 
-## ⚙️ Arquitectura
+## 🧭 My role and approach
+
+I don't write the code: I define, decide and validate.
+
+- **Architecture:** I designed the whole system and split it into phases with explicit exit criteria.
+- **Leading development:** implementation is carried out by AI coding assistants working from specifications and project rules that I wrote.
+- **Quality and safety:** I set the system's rules: read-only access to source data, validation and tests before every commit, and human approval before anything is published.
+- **Validation:** I check results against the real source and approve what gets published.
+- **Operations:** server, services and production deployment.
+
+---
+
+## ⚙️ Architecture
 
 ```mermaid
 graph LR
-    subgraph EDITORIAL["Pipeline editorial"]
-        INV[Investigación diaria] --> INF[Informe maestro]
-        INF --> GEN[Generadores por canal]
-        COB[(Registro de cobertura)] -.-> GEN
-        GEN --> REV{Revisión humana}
+    subgraph EDITORIAL["Editorial pipeline"]
+        INV[Daily research] --> INF[Master report]
+        INF --> GEN[Per-channel generators]
+        COB[(Coverage log)] -.-> GEN
+        GEN --> REV{Human review}
     end
 
-    subgraph DATOS["Datos"]
-        SRC[Fuente original] -->|solo lectura| EXT[Extractor]
-        EXT --> REPO[(Repositorios versionados)]
+    subgraph DATOS["Data"]
+        SRC[Original source] -->|read-only| EXT[Extractor]
+        EXT --> REPO[(Versioned repositories)]
     end
 
-    KB[Base de conocimiento local] -.-> INV
-    REV --> CAN[Canales de la comunidad]
-    REV -->|borradores| WEB[Portal web]
-    REPO -->|importación| WEB
-    WEB -->|API| BOTS[Servicios de alertas]
+    KB[Local knowledge base] -.-> INV
+    REV --> CAN[Community channels]
+    REV -->|drafts| WEB[Web portal]
+    REPO -->|import| WEB
+    WEB -->|API| BOTS[Alert services]
 ```
 
-1. **Pipeline editorial.** Un módulo de investigación diaria genera un informe maestro, y de él salen generadores especializados por canal: redes sociales, comunidad, avisos con fecha, resumen semanal, guion de vídeo y respuestas rápidas. Un registro de cobertura con ventana deslizante evita publicar dos veces lo mismo. Nada sale sin revisión humana.
-2. **Extractor de datos.** Servicio en contenedor que se lanza con un único comando. Lee la fuente original en solo lectura, con verificación de integridad antes y después, y genera entidades estructuradas multilingües con valores calculados e imágenes optimizadas. Después valida, ejecuta los tests y redacta un changelog legible frente a la versión anterior. Si cualquier paso falla, se detiene sin hacer commit.
-3. **Repositorios de datos.** Uno por título, con una carpeta por versión. Todo el historial de cambios es auditable.
-4. **Portal web (en reconstrucción).** Monolito modular: taxonomía, noticias, artículos, datos, cuentas, buscadores, API y redirecciones del sitio anterior. Debajo, base de datos relacional, caché, proxy inverso y tareas en segundo plano. Importa los datos de los repositorios y recibe del pipeline editorial borradores pendientes de revisión.
-5. **Servicios de alertas.** Bots independientes para la comunidad, que pasarán a usar la API del portal como fuente de verdad.
-6. **Base de conocimiento local (prototipo).** Búsqueda vectorial sobre un corpus propio con un modelo de lenguaje local, conectada al módulo de investigación.
+1. **Editorial pipeline.** A daily research module produces a master report, which feeds generators specialised by channel: social media, community, dated announcements, weekly summary, video script and quick replies. A coverage log with a sliding window prevents publishing the same thing twice. Nothing goes out without human review.
+2. **Data extractor.** A containerised service launched with a single command. It reads the original source read-only, with integrity checks before and after, and produces structured multilingual entities with computed values and optimised images. It then validates, runs the tests and writes a human-readable changelog against the previous version. If any step fails, it stops without committing.
+3. **Data repositories.** One per title, with a folder per version. The full change history is auditable.
+4. **Web portal (being rebuilt).** A modular monolith: taxonomy, news, articles, data, accounts, search, API and redirects from the old site. Underneath: relational database, cache, reverse proxy and background jobs. It imports data from the repositories and receives drafts awaiting review from the editorial pipeline.
+5. **Alert services.** Independent bots for the community, which will switch to the portal's API as their source of truth.
+6. **Local knowledge base (prototype).** Vector search over an in-house corpus with a local language model, connected to the research module.
 
 ---
 
-## 🧩 Decisiones clave
+## 🧩 Key decisions
 
-### 1. Reconstruir el portal desde cero, con un lanzamiento único
-- **Por qué:** los datos pasan a salir de la fuente original y no de fichas mantenidas a mano, y se evita sostener dos sistemas en paralelo.
-- **Contrapartida:** un lanzamiento más arriesgado y más tiempo sin resultados visibles.
-- **Mitigación:** entorno local idéntico a producción, migraciones repetibles ensayadas varias veces, staging con datos reales, redirección permanente para cada URL antigua y vuelta atrás por DNS.
+### 1. Rebuild the portal from scratch, with a single launch
+- **Why:** data now comes from the original source instead of hand-maintained entries, and there is no need to run two systems in parallel.
+- **Trade-off:** a riskier launch and a longer period without visible results.
+- **Mitigation:** a local environment identical to production, repeatable migrations rehearsed several times, staging with real data, a permanent redirect for every old URL, and rollback via DNS.
 
-### 2. Datos extraídos y versionados, no mantenidos a mano
-- **Por qué:** el proceso es reproducible y auditable, y cada nueva versión genera su informe de cambios, que además sirve como fuente propia de noticias.
-- **Contrapartida:** más complejidad técnica, casos límite que hay que validar contra la fuente y revisión humana de las imágenes procesadas con IA.
+### 2. Extracted, versioned data instead of hand-maintained data
+- **Why:** the process is reproducible and auditable, and every new version generates its own change report, which doubles as an in-house news source.
+- **Trade-off:** more technical complexity, edge cases that must be validated against the source, and human review of AI-processed images.
 
-### 3. La automatización propone; una persona aprueba
-- **Por qué:** la credibilidad del canal depende de no publicar nunca un rumor como si fuera un hecho.
-- **Contrapartida:** el ritmo de publicación depende de una sola persona.
+### 3. Automation proposes; a human approves
+- **Why:** the channel's credibility depends on never publishing a rumour as fact.
+- **Trade-off:** publishing pace depends on a single person.
 
-### 4. Contenedores en un único servidor, con un proyecto aislado por servicio
-- **Por qué:** coste bajo, entornos idénticos entre local y producción, y operación sencilla.
-- **Contrapartida:** punto único de fallo y escalado solo vertical, asumidos de forma consciente para esta escala.
+### 4. Containers on a single server, with one isolated project per service
+- **Why:** low cost, identical environments between local and production, and simple operations.
+- **Trade-off:** single point of failure and vertical-only scaling, consciously accepted at this scale.
 
-### 5. Login social con la plataforma donde ya vive la comunidad
-- **Por qué:** entrar es un clic, no hay contraseñas que custodiar, hay menos spam y se recogen los mínimos datos personales (RGPD).
-- **Contrapartida:** dependencia de un tercero, exclusión de quien no use esa plataforma y ningún canal de email propio.
+### 5. Social login through the platform where the community already lives
+- **Why:** one-click sign-in, no passwords to safeguard, less spam, and minimal personal data collected (GDPR).
+- **Trade-off:** dependency on a third party, people who don't use that platform are left out, and there is no in-house email channel.
 
 ---
 
-## ⏳ Evolución
+## ⏳ Evolution
 
-| Fecha (2026) | Hito |
+| Date (2026) | Milestone |
 | :--- | :--- |
-| Abril | Primeros servicios de alertas en producción. |
-| Mayo – octubre | El pipeline editorial pasa de un único módulo a un sistema de módulos por canal, con registro de cobertura y poda periódica. Cada módulo se versiona con su registro de correcciones; el principal va por su décima versión. |
-| Julio – agosto | Primer diseño de un módulo de noticias para convivir con la web existente. Dos iteraciones; la primera se descartó. |
-| Octubre | Prototipo de base de conocimiento local con búsqueda vectorial. |
-| Noviembre | Cambio de enfoque: portal nuevo desde cero, lanzamiento único y datos procedentes del extractor. Se cierra la fase 0 y se procesa la primera actualización real con el nuevo sistema. |
+| April | First alert services in production. |
+| May – October | The editorial pipeline grows from a single module into a system of per-channel modules, with a coverage log and periodic pruning. Each module is versioned with its own correction log; the main one is on its tenth version. |
+| July – August | First design of a news module meant to coexist with the existing site. Two iterations; the first was discarded. |
+| October | Local knowledge base prototype with vector search. |
+| November | Change of approach: a new portal from scratch, single launch, with data coming from the extractor. Phase 0 is closed and the first real update is processed with the new system. |
 
 ---
 
-## 📊 Resultados
+## 📊 Results
 
-Cifras de los registros internos del proyecto; no son métricas de audiencia.
+Figures from the project's internal records; these are not audience metrics.
 
-- **Pipeline editorial:** en funcionamiento diario desde abril de 2026.
-- **Datos:** 37 actualizaciones históricas procesadas, de las que salen 25 versiones de dos títulos, con textos en 13 idiomas y 979 imágenes optimizadas (8,9 MB en total).
-- **Reproducibilidad:** 44 tests automáticos; regenerar el conjunto completo produce 4.281 ficheros con 0 diferencias.
-- **Contraste con la web anterior:** 1.891 fichas en 291 páginas frente a 1.233 entidades extraídas. Aparecieron 331 errores heredados de la web antigua, que no se migran, y 11 del extractor, que se corrigieron.
-- **Primera actualización real:** el sistema detectó una discrepancia entre las notas oficiales y los datos, además de cambios que las notas no mencionaban.
+- **Editorial pipeline:** running daily since April 2026.
+- **Data:** 37 historical updates processed, yielding 25 versions across two titles, with text in 13 languages and 979 optimised images (8.9 MB in total).
+- **Reproducibility:** 44 automated tests; regenerating the full dataset produces 4,281 files with 0 differences.
+- **Comparison with the previous site:** 1,891 entries across 291 pages versus 1,233 extracted entities. It surfaced 331 errors inherited from the old site, which are not migrated, and 11 in the extractor, which were fixed.
+- **First real update:** the system detected a discrepancy between the official release notes and the data, as well as changes the notes did not mention.
 
 ---
 
 ## 🛠 Stack
 
-Python · Django · PostgreSQL (campos JSON para el contenido multilingüe; búsqueda vectorial en el prototipo) · Docker y Docker Compose · Git y GitHub · servidor virtual en DigitalOcean · servicios systemd · imágenes WebP con reescalado por IA · modelos de lenguaje en el pipeline editorial y en el desarrollo.
+Python · Django · PostgreSQL (JSON fields for multilingual content; vector search in the prototype) · Docker and Docker Compose · Git and GitHub · DigitalOcean virtual server · systemd services · WebP images with AI upscaling · language models in the editorial pipeline and in development.

@@ -1,104 +1,106 @@
-# Web corporativa para un despacho jurídico especializado
+# Corporate Website for a Specialist Law Firm
 
-> **Estado:** en producción en el dominio propio del despacho, con mejoras de contenido y SEO en curso.
-> **Rol:** arquitectura, dirección del desarrollo y migración de principio a fin.
+🇪🇸 [Versión en español](README.es.md)
 
-Sitio web estático corporativo con blog, captación de contactos y correo corporativo bajo dominio propio, construido para sacar al despacho de un constructor web cerrado.
+> **Status:** in production on the firm's own domain, with content and SEO improvements ongoing.
+> **Role:** architecture, development lead and migration, end to end.
 
----
-
-## 🎯 El problema
-
-El despacho dependía de un constructor web cerrado que controlaba la web, el dominio y el correo. Necesitaba:
-
-- recuperar el control de su presencia digital;
-- cargar más rápido y ser más visible en buscadores y motores de IA;
-- convertir mejor las visitas en consultas;
-- todo con un coste de mantenimiento mínimo.
+A static corporate website with a blog, lead capture and corporate email on the firm's own domain, built to move the firm off a closed website builder.
 
 ---
 
-## 🧭 Mi rol y método
+## 🎯 The problem
 
-Dirigí el desarrollo apoyándome en asistentes de IA para escribir el código.
+The firm depended on a closed website builder that controlled its website, domain and email. It needed to:
 
-- **Arquitectura y stack:** los definí yo.
-- **Desarrollo:** estructura de páginas, plantillas, blog, rendimiento y seguridad.
-- **Migración:** planifiqué y ejecuté el traslado del dominio y del correo desde la plataforma anterior, reduciendo al mínimo la interrupción.
-- **Producción:** despliegue continuo y paso a producción.
-- **Propiedad:** traspasé la infraestructura a cuentas del despacho, con acceso delegado para mí.
-- **Incidencias:** diagnóstico y solución en producción (formularios, contenido embebido y diferencias entre el entorno local y el de producción).
+- regain control of its digital presence;
+- load faster and be more visible in search engines and AI engines;
+- convert more visits into enquiries;
+- all with minimal maintenance cost.
 
 ---
 
-## ⚙️ Arquitectura
+## 🧭 My role and approach
+
+I led development using AI assistants to write the code.
+
+- **Architecture and stack:** defined by me.
+- **Development:** page structure, templates, blog, performance and security.
+- **Migration:** I planned and carried out the move of the domain and email from the previous platform, keeping disruption to a minimum.
+- **Production:** continuous deployment and go-live.
+- **Ownership:** I transferred the infrastructure to accounts owned by the firm, with delegated access for me.
+- **Incidents:** diagnosis and fixes in production (forms, embedded content and differences between the local and production environments).
+
+---
+
+## ⚙️ Architecture
 
 ```mermaid
 graph LR
-    REPO[Repositorio<br/>fuente única] -->|cada cambio| BUILD[Build en la plataforma]
-    BUILD --> CDN[Hosting con CDN<br/>+ cabeceras de seguridad]
-    DNS[DNS gestionado] --> CDN
-    DNS --> MAIL[Correo corporativo<br/>SPF · DKIM · DMARC]
-    CDN --> USR((Visitantes))
-    USR -->|consulta| FORM[Servicio externo<br/>de formularios]
-    USR -.->|eventos de conversión| AN[Analítica web]
+    REPO[Repository<br/>single source] -->|every change| BUILD[Build on the platform]
+    BUILD --> CDN[CDN hosting<br/>+ security headers]
+    DNS[Managed DNS] --> CDN
+    DNS --> MAIL[Corporate email<br/>SPF · DKIM · DMARC]
+    CDN --> USR((Visitors))
+    USR -->|enquiry| FORM[External<br/>form service]
+    USR -.->|conversion events| AN[Web analytics]
 ```
 
-- **Repositorio de código fuente:** única fuente de verdad del sitio.
-- **Generador estático:** convierte plantillas y contenido en HTML durante el build.
-- **Hosting con CDN:** compila automáticamente con cada cambio del repositorio y sirve el sitio desde el borde de la red.
-- **DNS gestionado:** en el mismo proveedor que el hosting; enruta la web y el correo.
-- **Correo corporativo:** en una suite de productividad, con autenticación de correo (SPF, DKIM y DMARC).
-- **Formulario de contacto:** mediante un servicio externo, sin backend propio.
-- **Analítica web:** mide los eventos de conversión.
-- **Seguridad:** cabeceras HTTP declaradas en el propio repositorio.
+- **Source code repository:** the site's single source of truth.
+- **Static generator:** turns templates and content into HTML at build time.
+- **CDN hosting:** builds automatically on every repository change and serves the site from the network edge.
+- **Managed DNS:** with the same provider as the hosting; routes both website and email.
+- **Corporate email:** on a productivity suite, with email authentication (SPF, DKIM and DMARC).
+- **Contact form:** through an external service, with no backend of its own.
+- **Web analytics:** tracks conversion events.
+- **Security:** HTTP headers declared in the repository itself.
 
 ---
 
-## 🧩 Decisiones clave
+## 🧩 Key decisions
 
-### 1. Sitio estático en lugar de un CMS o un constructor visual
-- **Por qué:** más velocidad, menos superficie de ataque y alojamiento prácticamente gratuito.
-- **Contrapartida:** editar exige un flujo con repositorio; no hay editor visual.
+### 1. A static site instead of a CMS or a visual builder
+- **Why:** more speed, less attack surface and practically free hosting.
+- **Trade-off:** editing requires a repository workflow; there is no visual editor.
 
-### 2. Build en la plataforma de hosting con cada cambio del repositorio
-- **Por qué:** despliegues reproducibles, sin depender de una máquina local, y vuelta atrás sencilla.
-- **Contrapartida:** dependencia de la plataforma y necesidad de fijar la versión del generador para evitar diferencias entre entornos.
+### 2. Builds on the hosting platform, triggered by every repository change
+- **Why:** reproducible deployments, no dependence on a local machine, and easy rollback.
+- **Trade-off:** dependence on the platform and the need to pin the generator version to avoid differences between environments.
 
-### 3. Salir de la plataforma anterior y unificar dominio, DNS y correo bajo control del despacho
-- **Por qué:** propiedad real de los activos digitales y libertad para elegir proveedor.
-- **Contrapartida:** una ventana de corte del correo imposible de eliminar del todo, y más coordinación entre varias partes.
+### 3. Leave the previous platform and bring domain, DNS and email under the firm's control
+- **Why:** real ownership of the digital assets and freedom to choose providers.
+- **Trade-off:** an email cut-over window that can't be fully eliminated, and more coordination between several parties.
 
-### 4. De una sola página a varias páginas independientes, más un blog
-- **Por qué:** cada página tiene su URL, sus metadatos y sus datos estructurados, lo que mejora el SEO, el posicionamiento local y la visibilidad en motores de IA.
-- **Contrapartida:** más plantillas que mantener, y los cambios de URL exigen redirecciones.
+### 4. From a single page to several independent pages, plus a blog
+- **Why:** each page has its own URL, metadata and structured data, which improves SEO, local positioning and visibility in AI engines.
+- **Trade-off:** more templates to maintain, and URL changes require redirects.
 
-### 5. Política de seguridad de contenido estricta y recursos alojados en el propio sitio
-- **Por qué:** seguridad, privacidad y rendimiento; las fuentes tipográficas se sirven desde el propio dominio.
-- **Contrapartida:** cada servicio externo nuevo (vídeos, formularios, analítica) hay que autorizarlo de forma explícita. Quedó demostrado cuando el contenido embebido falló en producción.
-
----
-
-## ⏳ Evolución
-
-1. Web original en un constructor cerrado.
-2. Plantilla de una sola página sobre el generador estático, como prueba de concepto.
-3. Separación en páginas independientes por área y por perfil.
-4. Despliegue continuo y migración de dominio y correo.
-5. Endurecimiento de la seguridad, optimización del rendimiento (precarga de fuentes y caché de recursos estáticos) y medición de conversiones.
-6. Blog con optimización para buscadores y motores de IA.
+### 5. A strict content security policy and self-hosted assets
+- **Why:** security, privacy and performance; fonts are served from the site's own domain.
+- **Trade-off:** every new external service (videos, forms, analytics) must be explicitly allowed. This became clear when embedded content failed in production.
 
 ---
 
-## 📊 Resultados
+## ⏳ Evolution
 
-- En producción en el dominio propio, con la web, el dominio y el correo bajo control del despacho.
-- Coste de infraestructura de unos 9 € al año, que corresponden solo al dominio: hosting, CDN y certificados entran en el plan gratuito.
+1. Original website on a closed builder.
+2. Single-page template on the static generator, as a proof of concept.
+3. Split into independent pages by practice area and by profile.
+4. Continuous deployment and domain and email migration.
+5. Security hardening, performance optimisation (font preloading and static asset caching) and conversion tracking.
+6. Blog optimised for search engines and AI engines.
 
-No hay cifras medidas de tráfico, conversiones ni rendimiento.
+---
+
+## 📊 Results
+
+- In production on its own domain, with the website, domain and email under the firm's control.
+- Infrastructure cost of about €9 a year, which covers only the domain: hosting, CDN and certificates fall within the free plan.
+
+No traffic, conversion or performance figures have been measured.
 
 ---
 
 ## 🛠 Stack
 
-Hugo · HTML, CSS y JavaScript sin frameworks · Git y GitHub · hosting estático con CDN, DNS y registro de dominio gestionados · suite de correo corporativo · analítica web · servicio externo de formularios · sin base de datos.
+Hugo · HTML, CSS and JavaScript without frameworks · Git and GitHub · static hosting with CDN, managed DNS and domain registration · corporate email suite · web analytics · external form service · no database.
