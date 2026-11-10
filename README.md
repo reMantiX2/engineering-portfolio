@@ -45,7 +45,21 @@ Plataforma que convierte señales de trading externas en órdenes en un broker, 
 
 ---
 
-### 4. AI Content Engine: ETL de Alta Eficiencia e Inferencia
+### 4. Hub de Datos Financieros Normalizados
+**Rol:** Director del desarrollo de principio a fin (arquitectura, calidad de datos y dirección con asistentes de IA)
+**Stack:** Python, Django, PostgreSQL, Docker, HTMX, DigitalOcean.
+
+Plataforma que recoge información financiera pública de empresas cotizadas, la homogeneiza y calcula indicadores comparables, con cada cifra enlazada a su documento de origen. La sirve a una web editorial y a otras aplicaciones a través de una API. En desarrollo avanzado.
+
+* **Datos en bruto inmutables:** todo lo demás se recalcula desde ellos, sin red, y cualquier cifra es auditable. Un hueco antes que un número inventado.
+* **Calidad medible:** al separar los huecos estructurales de los errores reales, las alertas bajaron de 127 a 3 en 25 empresas. Más del 87 % de cobertura en los indicadores principales sobre unas 1.000 empresas, con 382 tests.
+* **Rendimiento y coste:** de 976 a 29 consultas y de 608 a 137 ms por empresa tras la auditoría, con una infraestructura prevista de unos 17 $ al mes.
+
+[**📄 Leer el Estudio de Arquitectura completo →**](./financial-data-hub)
+
+---
+
+### 5. AI Content Engine: ETL de Alta Eficiencia e Inferencia
 **Rol:** Ingeniero Backend
 **Stack:** Python, Inferencia Serverless (Llama 3 / Mistral), Pinecone, Docker.
 
