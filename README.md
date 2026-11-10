@@ -74,6 +74,7 @@ Plataforma que recoge información financiera pública de empresas cotizadas, la
 Sitios sin servidor ni base de datos para personas que no editan código: alojamiento casi gratuito, superficie de ataque mínima, carga rápida y publicación desde el repositorio.
 
 * **[Web corporativa bilingüe para un estudio de arquitectura](./architecture-studio-website):** bilingüe nativa, modelo de contenido mínimo y factual, movimiento con mejora progresiva y una capa de descubrimiento generada en cada build (datos estructurados, sitemap y archivo legible por modelos de lenguaje) para posicionar en buscadores tradicionales y generativos.
+* **[Web corporativa para un despacho jurídico](./law-firm-website):** salida de un constructor web cerrado, con migración de dominio y correo (SPF, DKIM y DMARC) a cuentas propiedad del despacho, política de seguridad de contenido estricta y medición de conversiones. Unos 9 € al año de infraestructura, solo el dominio.
 * **[Portal editorial para una comunidad de esports](./esports-community-portal):** migración de una aplicación con servidor a un sitio estático en CDN con despliegue automático, eliminando el coste fijo del servidor, y un modelo de contenido diseñado para que la portada nunca quede vacía.
 
 **Stack común:** Hugo, Markdown con metadatos, HTML/CSS/JS sin frameworks, GitHub, hosting estático con CDN, DNS y certificados gestionados.
