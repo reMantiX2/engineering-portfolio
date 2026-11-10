@@ -102,7 +102,21 @@ Sitio estático y bilingüe para un estudio de arquitectura y reformas: una marc
 
 ---
 
-### 8. AI Content Engine: ETL de Alta Eficiencia e Inferencia
+### 8. Portal Editorial para una Comunidad de Esports
+**Rol:** Dirección técnica completa, de los requisitos a producción
+**Stack:** Hugo, Markdown, HTML/CSS/JS sin frameworks, GitHub, hosting estático con CDN.
+
+Migración de un portal de contenidos sobre un videojuego de nicho desde una aplicación con servidor a un sitio estático servido por CDN, pensado para que una persona sin perfil técnico lo mantenga sola. En producción.
+
+* **Fuera el servidor:** sin coste fijo mensual, con mantenimiento y superficie de ataque mínimos.
+* **Publicar es escribir y subir:** despliegue automático desde el repositorio, con historial y vuelta atrás.
+* **Modelo de contenido pensado para el volumen real:** un único tipo de artículo con categorías cerradas y etiquetas libres, para que la portada nunca quede vacía.
+
+[**📄 Leer el Estudio de Arquitectura completo →**](./esports-community-portal)
+
+---
+
+### 9. AI Content Engine: ETL de Alta Eficiencia e Inferencia
 **Rol:** Ingeniero Backend
 **Stack:** Python, Inferencia Serverless (Llama 3 / Mistral), Pinecone, Docker.
 
