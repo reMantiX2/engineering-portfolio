@@ -17,14 +17,17 @@ Una evolución arquitectónica completa de un sistema de ingesta de datos financ
 
 ---
 
-### 2. D2MantiX: Arquitectura Web Segura Cloud-Native
-**Rol:** Arquitecto de Soluciones
-**Stack:** AWS S3, CloudFront (CDN), Static Site Generation (SSG), Pipeline Local-to-Cloud.
+### 2. D2M: Plataforma de Inteligencia Editorial y Datos
+**Rol:** Director técnico y de producto (arquitectura, dirección del desarrollo con asistentes de IA y operación en producción)
+**Stack:** Python, Django, PostgreSQL, Docker, DigitalOcean, modelos de lenguaje.
 
-Una infraestructura web diseñada con enfoque "Security-First" (Seguridad ante todo), eliminando vulnerabilidades del lado del servidor al desacoplar la generación del contenido de su entrega.
+Sistema que automatiza la cobertura diaria de una comunidad de videojuegos de habla hispana: un pipeline editorial con IA que propone y una persona que aprueba, un extractor que convierte cada nueva versión de los datos en información versionada y auditable, y un portal web multilingüe que se reconstruye sobre esa base.
 
-* **Infraestructura Inmutable:** Despliegue de una arquitectura estática de alto rendimiento distribuida globalmente vía CDN.
-* **Seguridad Local-to-Cloud:** Pipeline personalizado "Air-Gapped" donde el contenido se genera en un entorno local aislado y se empuja de forma segura al *edge*, eliminando la exposición de la base de datos a la internet pública.
+* **Editorial con supervisión humana:** en producción a diario desde abril de 2026, con módulos especializados por canal y un registro de cobertura que evita repetir contenido.
+* **Datos reproducibles:** el conjunto completo se regenera con 0 diferencias en 4.281 ficheros y 13 idiomas, y cada versión produce su changelog automático. En la primera actualización real detectó cambios que las notas oficiales no mencionaban.
+* **Migración con los datos como fuente de verdad:** el contraste con la web anterior sacó a la luz 331 errores heredados que no se migran.
+
+[**📄 Leer el Estudio de Arquitectura completo →**](./d2mantix-architecture)
 
 ---
 
