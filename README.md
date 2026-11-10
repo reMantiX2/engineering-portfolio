@@ -11,7 +11,8 @@ Plataforma web por suscripción que reúne cada día información dispersa sobre
 
 * **Pipeline de datos asíncrono:** más de 3.700 empresas actualizadas cada día de mercado mediante 9 procesos programados, con el dato original guardado siempre antes de procesarlo.
 * **Recuperación de un sistema heredado:** de cero a unas 350 pruebas automatizadas, eliminación de código muerto, registro de decisiones vinculante y observabilidad propia con alertas de procesos caídos.
-* **Producto completo con costes contenidos:** suscripciones con pagos idempotentes, cinco idiomas, API con acceso de solo lectura y RGPD, todo en producción por unos 15 $ al mes.
+* **Producto completo con costes contenidos:** suscripciones con pagos idempotentes, cinco idiomas y RGPD, todo en producción por unos 15 $ al mes.
+* **Fuente central para otros productos:** API versionada de solo lectura, con claves por aplicación, alcances, auditoría, límite de peticiones y un usuario de base de datos que no puede escribir.
 
 [**📄 Leer el Estudio de Arquitectura completo →**](./arpada-trading-system)
 

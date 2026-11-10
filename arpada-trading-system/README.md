@@ -89,6 +89,32 @@ graph LR
 
 ---
 
+## 🔌 API de distribución de datos
+
+Al principio, los datos procesados solo podían verse en la web de la plataforma. La API los distribuye de forma controlada a otros productos internos (generación automática de contenido, newsletter y otros sistemas), sin repetir la captura de datos y sin poner en riesgo la plataforma en producción.
+
+- **Endpoints versionados de solo lectura en JSON**, con clave por aplicación y permisos por alcance.
+- **Acceso a la base de datos mediante un usuario de solo lectura**, a través de un enrutador dedicado.
+- **Límite de peticiones y auditoría de cada acceso**, apoyados en el almacén en memoria.
+- **Consola de gestión en el backoffice**, solo para personal interno: crear, consultar, caducar y revocar claves, y seguir el uso y los accesos fallidos.
+
+### Decisiones de la API
+
+1. **Una fuente central en lugar de integraciones a medida.**
+   - **Por qué:** todos los productos derivados salen de una sola fuente, sin duplicar la captura ni la lógica de datos.
+   - **Contrapartida:** hoy comparte despliegue y recursos con la web. Está previsto separarla en un servicio propio.
+2. **Usuario de base de datos de solo lectura.**
+   - **Por qué:** aunque se filtre una clave o falle la API, nadie puede modificar datos desde fuera.
+   - **Contrapartida:** cada tabla nueva exige conceder permisos a mano en producción.
+3. **Claves por aplicación con alcances, caducidad, almacenamiento en hash, auditoría y límite de peticiones.**
+   - **Por qué:** cada consumidor se controla y se revoca por separado, y todo acceso queda trazado.
+   - **Contrapartida:** una clave perdida no se recupera, hay que emitir otra, y el registro de accesos necesita una política de purga.
+4. **Consola de gestión propia en vez del panel del proveedor o el admin del framework.**
+   - **Por qué:** la gestión diaria de claves tenía que ser cómoda y autónoma.
+   - **Contrapartida:** una pieza más que mantener dentro del backoffice.
+
+---
+
 ## ⏳ Evolución
 
 | Área | Antes | Ahora |
@@ -100,6 +126,7 @@ graph LR
 | Observabilidad | Sin registro. | Sistema de sucesos con niveles, origen, retención y latidos. |
 | Interfaz | Framework CSS genérico. | Sistema de diseño propio, sin dependencias de terceros en el panel principal. |
 | Producto | Herramienta de datos. | SaaS completo: suscripciones, facturación, comunicaciones con consentimiento, páginas legales, analítica y cinco idiomas. |
+| Distribución | Datos visibles solo en la propia web. | API versionada de solo lectura (desde agosto de 2026) con consola de claves, ventana temporal configurable, identificadores estándar para cruzar con fuentes externas y documentación técnica completa para integrar nuevos sistemas. |
 
 ---
 
@@ -110,6 +137,7 @@ graph LR
 - Producción en 3 componentes (web, workers y planificador) y 2 bases de datos gestionadas, por unos 15 $ al mes.
 - Unas 350 pruebas automatizadas que se ejecutan en unos 40 segundos.
 - 5 idiomas.
+- API en producción con 2 endpoints y 2 productos internos consumiéndola; un tercero en integración.
 
 Todavía no hay métricas de usuarios ni de ingresos: la plataforma está en beta cerrada.
 
