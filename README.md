@@ -3,15 +3,15 @@
 
 ## 🚀 Proyectos Destacados
 
-### 1. Arpada Trading System: Del Monolito a la IA Serverless
-**Rol:** Ingeniero de Datos Principal & Arquitecto Cloud
-**Stack:** Python, Django, DigitalOcean Functions (Serverless), Redis, PostgreSQL (pgvector), GenAI Platform.
+### 1. Arpada Trading: Plataforma SaaS de Inteligencia de Mercados
+**Rol:** Director técnico y de producto (arquitectura, dirección del desarrollo con agentes de IA y operación en producción)
+**Stack:** Python, Django, Celery, Redis/Valkey, PostgreSQL, DigitalOcean App Platform, almacenamiento de objetos, Stripe.
 
-Una evolución arquitectónica completa de un sistema de ingesta de datos financieros. Este proyecto documenta el ciclo de vida de una plataforma de alta concurrencia, pasando de un MVP síncrono a una arquitectura distribuida orientada a eventos que utiliza IA para el análisis cualitativo.
+Plataforma web por suscripción que reúne cada día información dispersa sobre empresas cotizadas y la presenta de forma descriptiva en un único panel. Está en producción y en beta cerrada.
 
-* **Arquitectura Evolutiva:** Estudio de caso detallado sobre la migración desde un Droplet monolítico hacia una infraestructura PaaS/Serverless totalmente gestionada.
-* **Diseño Orientado a Eventos:** Implementación de **Redis** como orquestador de estados de alta velocidad para cientos de funciones de *scraping* concurrentes.
-* **Integración GenAI:** Uso de **RAG (Generación Aumentada por Recuperación)** con Búsqueda Vectorial para transformar datos financieros crudos en narrativas estratégicas automatizadas.
+* **Pipeline de datos asíncrono:** más de 3.700 empresas actualizadas cada día de mercado mediante 9 procesos programados, con el dato original guardado siempre antes de procesarlo.
+* **Recuperación de un sistema heredado:** de cero a unas 350 pruebas automatizadas, eliminación de código muerto, registro de decisiones vinculante y observabilidad propia con alertas de procesos caídos.
+* **Producto completo con costes contenidos:** suscripciones con pagos idempotentes, cinco idiomas, API con acceso de solo lectura y RGPD, todo en producción por unos 15 $ al mes.
 
 [**📄 Leer el Estudio de Arquitectura completo →**](./arpada-trading-system)
 

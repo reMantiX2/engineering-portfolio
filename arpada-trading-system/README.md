@@ -1,186 +1,120 @@
-# Arpada Trading System: Arquitectura Serverless y Distribuida
+# Arpada Trading: Plataforma SaaS de inteligencia de mercados
 
-Este proyecto implementa una infraestructura completa para la ingesta, normalización y visualización de datos financieros en tiempo real.
+> **Estado:** en producción, en beta cerrada previa al lanzamiento público.
+> **Rol:** director técnico y de producto.
 
-El diseño se centra en la escalabilidad modular y la optimización de costes, utilizando una arquitectura desacoplada basada en **DigitalOcean Functions** y gestión de estado en tiempo real con **Redis**.
-
-## 🔄 Evolución de la Arquitectura
-
-Siguiendo el principio de ingeniería *"MonolithFirst"*, el sistema ha evolucionado desde un prototipo rápido (MVP) hasta una solución distribuida capaz de gestionar alta concurrencia.
-
-### v1.0: El Monolito Unificado (MVP)
-**Objetivo:** Prototipado rápido para validar la viabilidad del proyecto y minimizar el tiempo de desarrollo hasta el mercado (*Time-to-Market*).
-
-En la fase inicial, el sistema se diseñó como un prototipo funcional (MVP) bajo una arquitectura monolítica fuertemente acoplada alojada en una única instancia.
-
-* **Ejecución Unificada:** El servidor web gestionaba las peticiones HTTP, ejecutaba los scripts de *scraping*, normalizaba los datos y escribía en base de datos de forma síncrona.
-* **Ventajas:** Despliegue simplificado y depuración inmediata, ideal para evaluar la viabilidad técnica y comercial.
-* **Problemas detectados:**
-    * **Saturación de recursos (Resource Starvation):** Los procesos de *scraping* y normalización generaban picos críticos de CPU y RAM, comprometiendo la estabilidad de toda la instancia.
-    * **Cuello de botella en concurrencia:** La contención de recursos impedía atender a múltiples usuarios simultáneamente; la navegación se volvía lenta o inaccesible mientras el servidor procesaba datos en segundo plano.
-    * **Escalado ineficiente:** Para solucionar los picos de procesamiento era necesario escalar verticalmente toda la máquina, desperdiciando recursos en los periodos de baja actividad.
-
-```mermaid
-graph TD
-    subgraph "Single Droplet (v1.0)"
-        Web[Servidor Web / Django]
-        Scraper[Script Scraper & Normalizador]
-        DB[(Base de Datos Local)]
-        
-        Web -- "Llamada Síncrona (Bloqueante)" --> Scraper
-        Scraper -- "Escritura Directa" --> DB
-        Web -- "Lectura" --> DB
-    end
-    User((Usuario)) -- "HTTP Request" --> Web
-    style Scraper fill:#f96,stroke:#333,stroke-width:2px
-```
-
-### v2.0: Desacoplamiento de Infraestructura y UI Responsiva
-**Objetivo:** Mejorar la estabilidad del servicio y la experiencia de usuario (UX) separando la capa de presentación de la persistencia de datos.
-
-En esta etapa de transición, se abandonó el monolito único para dividir la carga en instancias dedicadas (*Droplets* de DigitalOcean).
-
-* **Arquitectura Segregada:**
-    * **Web vs. Datos:** Se desplegaron dos instancias independientes: una dedicada exclusivamente al servidor web y la interfaz, y otra para alojar la Base de Datos y el procesamiento pesado.
-    * **Conectividad Segura:** La comunicación se estableció mediante **túneles cifrados**, evitando exponer la base de datos a la red pública.
-    * **Extractor (Híbrido):** El módulo de *scraping* se desacopló lógicamente, pero se alojó físicamente en la instancia de la base de datos para centralizar la escritura.
-* **Ventajas (Estrategia "Keep it Simple"):**
-    * **Refactorización Ágil:** Gracias a la base de código consolidada en la v1.0, el desacoplamiento de infraestructura se ejecutó en tiempo récord; solo requirió adaptaciones de conectividad en lugar de reescrituras complejas.
-    * **Control de la complejidad:** Se evitó la sobreingeniería prematura, manteniendo una arquitectura fácil de gestionar manualmente sin orquestadores complejos.
-    * **Protección de la UX:** Al aislar el servidor Web, los picos de carga del extractor ya no bloqueaban la navegación del usuario.
-* **Problemas detectados:**
-    * **Inestabilidad del Entorno (Dependency Hell):** Las actualizaciones de librerías y del SO en el servidor de datos generaban conflictos que rompían el entorno de ejecución del extractor local.
-    * **Mantenimiento del Scraper:** La fragilidad del código propio frente a cambios en las fuentes externas motivaron la decisión de **delegar la extracción a un servicio SaaS externo** como intermediario fiable.
-
-```mermaid
-graph LR
-    subgraph "Droplet A: Presentación"
-        Web[Servidor Web]
-    end
-    
-    subgraph "Droplet B: Datos"
-        DB[(PostgreSQL)]
-        Scraper[Extractor Local]
-    end
-
-    User((Usuario)) --> Web
-    Web -- "Túnel SSH / VPN" --> DB
-    Scraper -- "Escritura Local" --> DB
-    SaaS[SaaS Scraper Externo] -.-> Scraper
-```
+Plataforma web por suscripción que reúne cada día información sobre empresas cotizadas, dispersa en muchas fuentes y difícil de interpretar, y la presenta en un único panel. El contenido es descriptivo y tiene dos niveles de lectura, uno para quien empieza y otro para quien domina la materia. Informa, pero no recomienda.
 
 ---
 
-### v3.0: Servicios Gestionados y Modularidad Transparente
-**Objetivo:** Eliminar la carga operativa de administración de servidores (DevOps) y aumentar la resiliencia mediante servicios gestionados.
+## 🧭 Mi rol y método
 
-Una vez validada la separación de responsabilidades en la v2.0, se migró la infraestructura a servicios nativos de DigitalOcean (PaaS/DBaaS), eliminando la gestión manual del sistema operativo.
+No escribo el código: defino qué se construye, cómo y en qué orden, y llevo el sistema a producción.
 
-* **Especialización de la Infraestructura:**
-    * **Web (App Platform):** El servidor web se migró a un servicio de plataforma gestionada, permitiendo despliegues automáticos y escalado sin gestionar servidores.
-    * **Base de Datos (Managed Database):** Se sustituyó el Droplet de datos por un servicio de base de datos gestionado, garantizando copias de seguridad automáticas y alta disponibilidad sin intervención manual.
-    * **Extractor (Transición):** Se mantuvo aislado en un Droplet independiente. Se decidió no integrarlo aún en la plataforma gestionada debido a un inminente cambio de paradigma hacia una arquitectura *Serverless* (DigitalOcean Functions).
-* **Ventajas (Transparencia y Modularidad):**
-    * **Mejora Continua Invisible:** Gracias al desacoplamiento previo, las piezas de la infraestructura pudieron sustituirse (de Droplet a PaaS) de forma totalmente transparente para el usuario final, sin cortes de servicio.
-    * **Reducción de "Ruido" Operativo:** El equipo de desarrollo dejó de preocuparse por parches de seguridad, actualizaciones de Linux o configuraciones de firewall en la web y la BBDD.
-* **Problema a resolver (Próximo paso):** El Extractor en el Droplet sigue siendo un "punto único de fallo" que requiere mantenimiento y está sobredimensionado para tareas que son esporádicas, lo que prepara el terreno para la **migración a Serverless**.
-
-```mermaid
-graph LR
-    User((Usuario)) --> App["DO App Platform (Web)"]
-    
-    subgraph "DigitalOcean Managed Services"
-        DB[("Managed Database")]
-    end
-    
-    subgraph "Legacy Infra"
-        Droplet["Droplet Extractor (Punto único de fallo)"]
-    end
-
-    App --> DB
-    Droplet --> DB
-    style Droplet fill:#ffcccc,stroke:#f00
-```
+- **Arquitectura:** separación por audiencias, pipeline de datos asíncrono, almacenamiento e integración de pagos.
+- **Dirección del desarrollo:** la implementación la ejecutan agentes de IA de programación bajo mi dirección. Yo fijo las reglas que deben seguir y apruebo cada cambio.
+- **Recuperación del sistema:** tras una etapa de código de baja calidad, hice inventario, ordené el trabajo por riesgo y no por molestia, y fijé una regla: no se toca nada sin poder demostrar antes que el cambio no rompe nada.
+- **Criterios por escrito:** un registro de decisiones vinculante, con el porqué y el coste asumido de cada una, y un manual de operaciones que describe el sistema tal como funciona hoy.
+- **Calidad y observabilidad:** estrategia de pruebas y política de registro (qué se registra, con qué nivel y cuánto tiempo se guarda).
+- **Producto y cumplimiento:** modelo de suscripción, facturación, comunicaciones con consentimiento y privacidad (RGPD).
+- **Operación:** despliegues, migraciones en producción y resolución de incidencias de infraestructura.
 
 ---
 
-### v4.0: Arquitectura Event-Driven (Serverless & Redis)
-**Objetivo:** Escalabilidad infinita, actualización de datos en tiempo real y observabilidad total mediante orquestación de estados de alta velocidad.
-
-En la evolución final, se eliminó el último vestigio de infraestructura fija (el Droplet del "Extractor") para adoptar una arquitectura puramente *Serverless* gestionada por una base de datos en memoria.
-
-* **El nuevo paradigma (Functions):**
-    * **Desatomización del Código:** El código del extractor, ya maduro y capaz de gestionar múltiples fuentes, se dividió en micro-funciones independientes (DigitalOcean Functions).
-    * **Ejecución Híbrida:** Ya no se limita a ejecuciones programadas (cron); el sistema permite actualizaciones **casi en tiempo real** disparadas por la navegación del usuario (*On-Demand*), mejorando drásticamente la frescura de los datos.
-* **El Cerebro: Orquestación con Redis:**
-    * **Gestión de Estado:** Se implementó Redis no solo como caché, sino como gestor de colas y estados de alta concurrencia. Cada tarea de extracción/normalización se registra con un estado preciso: *En Espera, Ejecución, Terminada* o *Error* (con su código específico).
-    * **Alta Velocidad:** La capacidad de Redis para manejar miles de operaciones por segundo permite coordinar cientos de funciones ejecutándose en paralelo sin que el sistema "sude".
-* **Ventajas:**
-    * **Observabilidad Total:** El panel de administrador lee directamente de Redis, permitiendo visualizar en tiempo real qué está ocurriendo en el *backend*, detectar errores específicos y reintentar tareas fallidas.
-    * **Eficiencia de Costes y Recursos:** Solo se consumen recursos de computación (Functions) cuando hay datos que procesar. Si nadie actualiza, el coste es cero.
-    * **Rendimiento "Como un tiro":** Al descargar a la BBDD principal de la gestión de colas y usar la latencia de microsegundos de Redis, la sensación de fluidez del sistema es máxima.
+## ⚙️ Arquitectura
 
 ```mermaid
-graph TD
-    User((Usuario)) --> Web[App Platform]
-    Web -- "1. Petición Update" --> Redis{"Redis (Gestor de Colas)"}
-    
-    subgraph "Serverless Cloud"
-        Func1[Function: Scraper A]
-        Func2[Function: Scraper B]
-        Func3[Function: Normalizador]
+graph LR
+    subgraph WEB["Aplicación web (por audiencia)"]
+        PUB[Sitio público multiidioma]
+        DASH[Panel de suscriptores]
+        BO[Backoffice interno]
+        API[API de lectura con clave]
     end
-    
-    Redis -- "2. Trigger Event" --> Func1
-    Redis -- "2. Trigger Event" --> Func2
-    Func1 & Func2 --> Func3
-    
-    Func3 -- "3. Datos Limpios" --> DB[(Managed DB)]
-    Func3 -- "4. Actualizar Estado" --> Redis
-    
-    Admin[Panel Admin] -- "Observabilidad (Real-time)" --> Redis
-    
-    style Redis fill:#E22C3C,color:white,stroke:#333
+
+    subgraph PIPE["Pipeline de datos asíncrono"]
+        PLAN[Planificador] --> COLA[(Cola en memoria)]
+        COLA --> WRK[Workers]
+    end
+
+    EXT[Fuentes de datos] --> WRK
+    WRK -->|original| OBJ[(Almacenamiento de objetos)]
+    WRK -->|procesado| DB[(Base de datos relacional)]
+
+    DB --> PUB
+    DB --> DASH
+    DB --> BO
+    DB -->|conexión de solo lectura| API
+
+    GW[Punto único de integraciones] --- PAY[Pasarela de pagos]
+    GW --- MAIL[Email transaccional]
+    GW --- AN[Analítica web]
+    WEB --- GW
+
+    WRK -.->|sucesos y latidos| LOG[(Registro de sucesos)]
+    LOG -.-> BO
 ```
 
-### v5.0: Inteligencia Artificial Nativa (GenAI Platform & Vector Search)
-**Objetivo:** Transformar datos cuantitativos en "narrativas" cualitativas utilizando servicios gestionados de IA para reducir la complejidad operativa y los costes de inferencia.
+- **Aplicación web modular, dividida por audiencia y no por funcionalidad:** sitio público multiidioma, panel de suscriptores, backoffice interno con estadísticas y registro de sucesos, y una API de lectura autenticada por clave, con su consola de gestión.
+- **Pipeline de datos asíncrono:** un planificador lanza tareas periódicas que ejecutan workers en segundo plano. Todas siguen el mismo patrón: adquirir los datos, guardar el original, procesarlo y volcarlo a la base de datos. Cada paso encadena el siguiente.
+- **Base de datos relacional con dos conexiones:** una general y otra de solo lectura para la API, con permisos por tabla.
+- **Almacén en memoria compartido** para caché y cola de mensajes.
+- **Almacenamiento de objetos** que hace de data lake de los datos originales.
+- **Integraciones externas** (pagos sincronizados por webhooks, email transaccional y analítica), todas a través de un único punto de control.
+- **Observabilidad propia:** registro persistente con nivel, origen y retención por nivel, consultable desde el backoffice, y «latidos» que avisan cuando un proceso programado deja de ejecutarse.
 
-Se sustituye la gestión manual de modelos por la **DigitalOcean GenAI Platform**, integrando la inteligencia artificial directamente en el pipeline *serverless*.
+---
 
-* **Fase 1: Ingesta Cognitiva (Serverless Inference & Embeddings):**
-    * **Paso A: Micro-Resúmenes (LLM Ligero):** Las *Functions* envían los datos crudos a un modelo de texto eficiente (ej. *Llama 3 8B*) en la plataforma de DO. Se genera un párrafo explicativo limpio.
-    * **Paso B: Vectorización (Embedding Model):** Ese párrafo limpio se envía inmediatamente a un **modelo de Embeddings** de DO. Este servicio transforma el texto en una representación matemática (vector) de alta dimensionalidad.
-    * **Paso C: Almacenamiento (Managed PostgreSQL):** Finalmente, se guardan tanto el texto legible como su vector correspondiente en la base de datos usando la extensión **`pgvector`**.
+## 🧩 Decisiones clave
 
-* **Fase 2: Experiencia de Usuario (RAG Gestionado):**
-    * **Recuperación Semántica:** Cuando el usuario consulta, su pregunta también se vectoriza (con el mismo modelo del Paso B) y se comparan los vectores en PostgreSQL para encontrar los resúmenes más relevantes por cercanía matemática. Solo disponible para administradores para generación de contenido del blog.
-    * **El Analista Virtual:** Se utiliza un modelo fundacional de mayor capacidad (vía GenAI Platform) alimentado con esos resúmenes recuperados (RAG) para dar la respuesta final.
+### 1. Guardar siempre el dato original antes de procesarlo
+- **Por qué:** si el procesado falla o cambia la lógica, se reprocesa sin volver a pagar la adquisición.
+- **Contrapartida:** más almacenamiento y la necesidad de una limpieza automática por antigüedad.
 
-* **Ventajas (Stack Tecnológico Unificado):**
-    * **Simplificación Total:** Todo (Web, BBDD, Functions, Modelos de Texto y Embeddings) vive dentro del ecosistema de DigitalOcean.
-    * **Escalado Económico:** Usar modelos pequeños para resumir y modelos de embeddings optimizados reduce costes frente a usar modelos gigantes para todo.
-    * **Gobernanza del Dato:** Los datos sensibles nunca salen de la infraestructura privada virtual (VPC) de DigitalOcean.
+### 2. Tareas que se encadenan entre sí, sin orquestador
+- **Por qué:** es simple, cada tarea es independiente y un fallo no bloquea la cola.
+- **Contrapartida:** no existe una señal de «pipeline terminado». Se compensa con los latidos del registro de sucesos.
 
-```mermaid
-sequenceDiagram
-    participant Source as Fuente Datos
-    participant Func as DO Function
-    participant SmallLLM as GenAI (Llama 8B)
-    participant Embed as GenAI (Embeddings)
-    participant DB as DB (pgvector)
-    participant Admin as Admin Blog
+### 3. Pagos sincronizados de forma idempotente
+- **Por qué:** el aviso de la pasarela solo indica qué ha cambiado, y el estado real se consulta siempre a la pasarela. Así, los avisos duplicados o fuera de orden no corrompen nada y no hace falta una tabla de eventos procesados.
+- **Contrapartida:** una llamada extra a la pasarela por cada evento.
 
-    Note over Source, DB: Fase 1: Ingesta Cognitiva
-    Source->>Func: Datos Crudos
-    Func->>SmallLLM: Enviar Datos
-    SmallLLM->>Func: Retorna "Micro-Resumen"
-    Func->>Embed: Enviar Resumen
-    Embed->>Func: Retorna Vector [0.12, 0.98...]
-    Func->>DB: INSERT (Texto + Vector)
+### 4. Configuración que falla al arrancar
+- **Por qué:** nació de una incidencia real. Valores por defecto silenciosos hacían que el sistema pareciera funcionar con una configuración incorrecta, sin dar ningún error. Ahora los secretos son obligatorios y no tienen valor por defecto.
+- **Contrapartida:** si falta una variable, la aplicación no arranca. Es exactamente lo que se busca: convertir un fallo silencioso en uno visible.
 
-    Note over DB, Admin: Fase 2: RAG (Blog Generation)
-    Admin->>DB: Consulta Semántica
-    DB->>Admin: Retorna Contexto Relevante
-    Admin->>Admin: Generación Post con IA + Contexto
-```
+### 5. El sistema calcula los hechos; el texto solo los describe
+- **Por qué:** las cifras se calculan y se guardan como datos estructurados con versión, y el texto se redacta al mostrarlo, en el idioma de cada usuario y sin formular recomendaciones, porque el asesoramiento financiero está regulado. Esto deja preparada la entrada de la IA solo como redactora, nunca como fuente de cifras.
+- **Contrapartida:** textos más rígidos que una redacción libre y gestión de versiones del formato de los datos.
+
+---
+
+## ⏳ Evolución
+
+| Área | Antes | Ahora |
+| :--- | :--- | :--- |
+| Infraestructura | Servidores propios con despliegue por script remoto. | Plataforma gestionada que despliega directamente desde el repositorio; el flujo antiguo se retiró del todo. |
+| Almacenamiento | Ficheros en disco local. | Almacenamiento de objetos en la nube. |
+| Código | Etapa de código defectuoso. | Unas 570 líneas de código muerto eliminadas y un único punto de acceso al almacenamiento y a los servicios externos. |
+| Calidad | Ninguna prueba. | Unas 350 pruebas automatizadas y un entorno local en contenedores que replica producción. |
+| Observabilidad | Sin registro. | Sistema de sucesos con niveles, origen, retención y latidos. |
+| Interfaz | Framework CSS genérico. | Sistema de diseño propio, sin dependencias de terceros en el panel principal. |
+| Producto | Herramienta de datos. | SaaS completo: suscripciones, facturación, comunicaciones con consentimiento, páginas legales, analítica y cinco idiomas. |
+
+---
+
+## 📊 Escala y resultados
+
+- Más de 3.700 empresas cotizadas actualizadas cada día de mercado, y unas 10.000 en el índice de búsqueda.
+- 9 procesos programados (diarios, semanales y mensuales).
+- Producción en 3 componentes (web, workers y planificador) y 2 bases de datos gestionadas, por unos 15 $ al mes.
+- Unas 350 pruebas automatizadas que se ejecutan en unos 40 segundos.
+- 5 idiomas.
+
+Todavía no hay métricas de usuarios ni de ingresos: la plataforma está en beta cerrada.
+
+---
+
+## 🛠 Stack
+
+Python · Django · Celery · Redis/Valkey · PostgreSQL · DigitalOcean App Platform · almacenamiento de objetos compatible con S3 · Stripe · Docker (entorno local) · HTML/CSS/JS sin frameworks de frontend.
