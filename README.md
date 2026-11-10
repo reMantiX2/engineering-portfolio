@@ -59,7 +59,21 @@ Plataforma que recoge información financiera pública de empresas cotizadas, la
 
 ---
 
-### 5. AI Content Engine: ETL de Alta Eficiencia e Inferencia
+### 5. Plataforma de Agregación de Datos Estadísticos
+**Rol:** Dirección técnica y de producto (arquitectura, especificaciones y dirección con asistentes de IA)
+**Stack:** Python, FastAPI, PostgreSQL, Docker Compose, almacenamiento de objetos.
+
+Plataforma que recoge datos estadísticos públicos de varios organismos, cada uno con sus propios formatos, códigos y calendarios, y los sirve mediante una API única y estable. Prototipo operativo en entorno local.
+
+* **Ingesta y servicio desacoplados:** la API solo consulta la base propia, así que una fuente caída o cambiada nunca rompe el servicio.
+* **Reprocesable y trazable:** copia original inmutable, etapas que guardan su resultado y detección de cambios en cada nueva publicación de la fuente.
+* **Respaldo probado de verdad:** restauración completa verificada sobre unos 9 millones de observaciones.
+
+[**📄 Leer el Estudio de Arquitectura completo →**](./statistical-data-platform)
+
+---
+
+### 6. AI Content Engine: ETL de Alta Eficiencia e Inferencia
 **Rol:** Ingeniero Backend
 **Stack:** Python, Inferencia Serverless (Llama 3 / Mistral), Pinecone, Docker.
 
