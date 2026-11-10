@@ -73,7 +73,21 @@ Plataforma que recoge datos estadísticos públicos de varios organismos, cada u
 
 ---
 
-### 6. AI Content Engine: ETL de Alta Eficiencia e Inferencia
+### 6. Motor Editorial Automatizado
+**Rol:** Dirección de producto y técnica de punta a punta (arquitectura, costes, dirección con agentes de IA y operación)
+**Stack:** Node.js, Express, PostgreSQL, DigitalOcean (PaaS con jobs programados), SSO corporativo, modelos de lenguaje.
+
+Pipeline que convierte cada día datos financieros estructurados en contenido listo para publicar (posts, piezas visuales, avisos y newsletter semanal), con un editor humano que decide qué sale. En producción y en uso diario desde agosto de 2026.
+
+* **La IA solo redacta:** una capa de reglas deterministas, configurable desde el panel, decide qué merece contenido. Coste acotado, resultados auditables y menos alucinaciones.
+* **Infraestructura ligera:** jobs efímeros que solo cuestan mientras se ejecutan, y piezas visuales generadas en el navegador del editor en lugar de en el servidor.
+* **Evolución pragmática:** de un prompt usado a mano en un chat a un panel instalable con SSO, con más de 150 ejecuciones del job diario en producción.
+
+[**📄 Leer el Estudio de Arquitectura completo →**](./editorial-automation-engine)
+
+---
+
+### 7. AI Content Engine: ETL de Alta Eficiencia e Inferencia
 **Rol:** Ingeniero Backend
 **Stack:** Python, Inferencia Serverless (Llama 3 / Mistral), Pinecone, Docker.
 
