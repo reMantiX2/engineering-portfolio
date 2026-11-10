@@ -87,7 +87,21 @@ Pipeline que convierte cada día datos financieros estructurados en contenido li
 
 ---
 
-### 7. AI Content Engine: ETL de Alta Eficiencia e Inferencia
+### 7. Web Corporativa Bilingüe para un Estudio de Arquitectura
+**Rol:** Dirección técnica y de producto de principio a fin (colaboración con un estudio)
+**Stack:** Hugo, HTML/CSS/JS sin frameworks, Markdown, GitHub, hosting estático.
+
+Sitio estático y bilingüe para un estudio de arquitectura y reformas: una marca premium que debía encontrarse en búsquedas locales y en asistentes de IA, con coste y mantenimiento mínimos para un equipo que no edita código. En producción.
+
+* **Sin servidor ni base de datos:** alojamiento casi gratuito, superficie de ataque mínima y carga rápida.
+* **Diseñada para ser citada:** cada build genera datos estructurados, sitemap, un archivo legible por modelos de lenguaje e imagen social por proyecto.
+* **Contenido verificable:** modelo de datos mínimo y factual, taxonomía cerrada y normas editoriales que prohíben inventar datos o simular obra con imágenes generadas.
+
+[**📄 Leer el Estudio de Arquitectura completo →**](./architecture-studio-website)
+
+---
+
+### 8. AI Content Engine: ETL de Alta Eficiencia e Inferencia
 **Rol:** Ingeniero Backend
 **Stack:** Python, Inferencia Serverless (Llama 3 / Mistral), Pinecone, Docker.
 
